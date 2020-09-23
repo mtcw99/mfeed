@@ -5,11 +5,6 @@
 
 namespace rss::downloader
 {
-    void print()
-    {
-        fmt::print("Test {}\n", "rss::downloader::print");
-    }
-
     static int progress_func(void *,
             curl_off_t dltotal, curl_off_t dlnow,
             curl_off_t, curl_off_t)

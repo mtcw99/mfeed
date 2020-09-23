@@ -25,12 +25,21 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
 include(FetchContent)
+
+# fmtlib
 FetchContent_Declare(
     fmtlib
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
     GIT_TAG 7.0.3
 )
 FetchContent_MakeAvailable(fmtlib)
+
+FetchContent_Declare(
+    pugixml
+    GIT_REPOSITORY https://github.com/zeux/pugixml
+    GIT_TAG v1.10
+)
+FetchContent_MakeAvailable(pugixml)
 
 add_subdirectory(src)
 
