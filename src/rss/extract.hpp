@@ -1,10 +1,12 @@
 #pragma once
 
-#include <string>
+#include <string_view>
+#include <optional>
+
 #include "feed.hpp"
 
 namespace rss::extract
 {
-    rss::feed parse(const std::string &filename);   
+    std::optional<rss::feed> parse(std::string_view filename);   
 }
 

@@ -2,6 +2,11 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
+#include "date/date.h"       // Remove when gcc fully implements C++20 date feature
+
+// C++20:
+// - date:: TO std::chrono::
 
 namespace rss
 {
@@ -11,7 +16,7 @@ namespace rss
         std::string link;
         std::string guid;
         std::string description;
-        std::string pub_date;
+        date::sys_time<std::chrono::seconds> pub_date;
     };
 
     struct feed
@@ -20,12 +25,11 @@ namespace rss
         std::string link;
         std::string description;
         std::string language;
-        bool        parsed;
 
         std::vector<feed_item> items;
 
-        feed();
-        ~feed();
+        feed() = default;
+        ~feed() = default;
 
         void new_item(feed_item &item);
     };

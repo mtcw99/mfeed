@@ -17,5 +17,6 @@ target_link_libraries(mfeed
         ${CURL_LIBRARIES}
         stdc++fs
         pugixml
+        date
 )
 

@@ -1,22 +1,23 @@
 #include "extract.hpp"
 
 #include <iostream>
+#include <sstream>
 
 #include <pugixml.hpp>
 #include <fmt/format.h>
 
 namespace rss::extract
 {
-    rss::feed parse(const std::string &filename)
+    std::optional<rss::feed> parse(std::string_view filename)
     {
         rss::feed feed;
 
         fmt::print("Parsing: {}\n", filename);
         pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_file(filename.c_str());
+        pugi::xml_parse_result result = doc.load_file(filename.data());
         if (!result)
         {
-            return feed;
+            return {};
         }
 
         fmt::print("RSS Version: {}\n",
@@ -24,7 +25,6 @@ namespace rss::extract
 
         pugi::xml_node channel = doc.child("rss").child("channel");
 
-        feed.parsed = true;
         feed.title = channel.child("title").child_value();
         feed.link = channel.child("link").child_value();
         feed.description = channel.child("description").child_value();
@@ -38,7 +38,8 @@ namespace rss::extract
             feeditem.link = item.child("link").child_value();
             feeditem.guid = item.child("guid").child_value();
             feeditem.description = item.child("description").child_value();
-            feeditem.pub_date = item.child("pubDate").child_value();
+            std::istringstream pub_date_str(item.child("pubDate").child_value());
+            pub_date_str >> date::parse("%a, %d %b %Y %T %z", feeditem.pub_date);
 
             feed.new_item(feeditem);
         }

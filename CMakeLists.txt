@@ -16,7 +16,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_BUILD_TYPE debug)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fno-exceptions -DPUGIXML_NO_EXCEPTIONS")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -40,6 +41,13 @@ FetchContent_Declare(
     GIT_TAG v1.10
 )
 FetchContent_MakeAvailable(pugixml)
+
+FetchContent_Declare(
+    date
+    GIT_REPOSITORY https://github.com/HowardHinnant/date.git
+    GIT_TAG v3.0.0
+)
+FetchContent_MakeAvailable(date)
 
 add_subdirectory(src)
 
