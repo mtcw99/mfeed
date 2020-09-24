@@ -3,6 +3,7 @@ add_executable(mfeed
     test.cpp
     rss/downloader.cpp
     rss/extract.cpp
+    rss/feed.cpp
 )
 
 target_compile_features(mfeed PRIVATE cxx_std_20)
