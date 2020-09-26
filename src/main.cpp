@@ -6,25 +6,35 @@
 #include "date/date.h"
 #include <fmt/format.h>
 
-#include "rss/downloader.hpp"
-#include "rss/extract.hpp"
-
-namespace fs = std::filesystem;
+#include "rss/data.hpp"
+#include "rss/feed.hpp"
 
 int main(int /*argc*/, char ** /*argv*/)
 {
-    const std::string tmp_path = fs::temp_directory_path();
-    const std::string filepath = tmp_path + "/phoronix.rss";
-    if (!fs::exists(filepath))
+    rss::data data;
+
+#if 0
+    data.new_feed("https://www.phoronix.com/rss.php", "phoronix.rss");
+
+    rss::feed &feed = data.feeds_list[0];
+
+    fmt::print("Title: {}\nLink: {}\nDesc: {}\nLang: {}\n",
+            feed.title, feed.link, feed.description, feed.language);
+
+    for (auto &item : feed.items)
     {
-        rss::downloader::fetch("https://www.phoronix.com/rss.php", filepath);
+        std::stringstream os_pubdate;
+        os_pubdate << date::format("%F %T", item.pub_date);
+        fmt::print("\nTitle: {}\nDate: {}\nLink: {}\nDescription: {}\n",
+                item.title, os_pubdate.str(), item.link, item.description);
     }
 
-    std::optional<rss::feed> feed_opt = rss::extract::parse(filepath);
-    if (feed_opt.has_value())
-    {
-        rss::feed &feed = feed_opt.value();
+    data.save("test.json");
+#endif
+    data.load("test.json");
 
+    for (auto &feed : data.feeds_list)
+    {
         fmt::print("Title: {}\nLink: {}\nDesc: {}\nLang: {}\n",
                 feed.title, feed.link, feed.description, feed.language);
 
@@ -32,10 +42,12 @@ int main(int /*argc*/, char ** /*argv*/)
         {
             std::stringstream os_pubdate;
             os_pubdate << date::format("%F %T", item.pub_date);
-            fmt::print("\nTitle: {}\nLink: {}\nDescription: {}\nPubDate: {}\n",
-                    item.title, item.link, item.description, os_pubdate.str());
+            fmt::print("\nTitle: {}\nDate: {}\nLink: {}\nDescription: {}\n",
+                    item.title, os_pubdate.str(), item.link, item.description);
         }
     }
+
+    std::cin.get();
 
     return 0;
 }

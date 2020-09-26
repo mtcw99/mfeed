@@ -1,0 +1,26 @@
+#pragma once
+
+#include <filesystem>
+#include <string_view>
+#include <vector>
+#include "feed.hpp"
+
+namespace rss
+{
+    struct data
+    {
+        const std::string tmp_path = std::filesystem::temp_directory_path();
+        std::string home_dir;
+        std::vector<rss::feed> feeds_list;
+
+        data();
+        ~data() = default;
+
+        void load(std::string_view filepath);
+        void save(std::string_view filepath);
+
+        void add(const rss::feed &new_feed);
+        void new_feed(std::string_view url, std::string_view filename);
+    };
+}
+

@@ -4,13 +4,15 @@ add_executable(mfeed
     rss/downloader.cpp
     rss/extract.cpp
     rss/feed.cpp
+    rss/data.cpp
 )
 
 target_compile_features(mfeed PRIVATE cxx_std_20)
 target_compile_options(mfeed PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
 )
+
 target_link_libraries(mfeed
     PRIVATE
         fmt::fmt
@@ -18,5 +20,6 @@ target_link_libraries(mfeed
         stdc++fs
         pugixml
         date
+	nlohmann_json::nlohmann_json
 )
 

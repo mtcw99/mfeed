@@ -23,18 +23,18 @@ namespace rss::downloader
         return size * nmemb;
     }
 
-    void fetch(const std::string &url, const std::string &filename)
+    void fetch(std::string_view url, std::string_view filename)
     {
         fmt::print("Pulling: {}\n", url);
         CURL        *curl = nullptr;
         CURLcode    res;
-        std::ofstream of(filename);
+        std::ofstream of(filename.data());
 
         curl = curl_easy_init();
         if (curl)
         {
             // Setup
-            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_URL, url.data());
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
             curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
             curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_func);

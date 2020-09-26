@@ -6,9 +6,11 @@ Mart's RSS Feed Reader
 * [libcurl](https://curl.haxx.se/libcurl/)
 * [cmake](https://cmake.org/)
 
-### Dependencies (cmake auto downloads)
+### Dependencies (cmake FetchContent)
 * [fmt](https://github.com/fmtlib/fmt)
 * [pugixml](https://github.com/zeux/pugixml)
+* [date](https://github.com/HowardHinnant/date)
+* [json](https://github.com/nlohmann/json)
 
 ## Build
 * `mkdir build`

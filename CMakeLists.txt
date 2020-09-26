@@ -37,7 +37,7 @@ FetchContent_MakeAvailable(fmtlib)
 
 FetchContent_Declare(
     pugixml
-    GIT_REPOSITORY https://github.com/zeux/pugixml
+    GIT_REPOSITORY https://github.com/zeux/pugixml.git
     GIT_TAG v1.10
 )
 FetchContent_MakeAvailable(pugixml)
@@ -48,6 +48,18 @@ FetchContent_Declare(
     GIT_TAG v3.0.0
 )
 FetchContent_MakeAvailable(date)
+
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
+    GIT_TAG v3.9.1
+)
+FetchContent_GetProperties(json)
+if(NOT json_POPULATED)
+    FetchContent_Populate(json)
+    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+FetchContent_MakeAvailable(json)
 
 add_subdirectory(src)
 

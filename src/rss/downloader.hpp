@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 
 namespace rss::downloader
 {
-    void fetch(const std::string &url, const std::string &filename);
+    void fetch(std::string_view url, std::string_view filename);
 }
 
