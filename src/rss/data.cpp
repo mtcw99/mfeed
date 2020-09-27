@@ -31,6 +31,10 @@ namespace rss
     void data::load(std::string_view filepath)
     {
         const std::string load_path = this->home_dir + '/' + filepath.data();
+        if (!std::filesystem::exists(load_path))
+        {
+            return;
+        }
         nlohmann::json json;
 
         // Load json file

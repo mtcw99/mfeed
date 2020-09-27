@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <chrono>
 #include "date/date.h"       // Remove when gcc fully implements C++20 date feature
@@ -23,6 +24,7 @@ namespace rss
         feed_item(nlohmann::json json);
 
         nlohmann::json to_json();
+        std::string pub_date_str();
     };
 
     struct feed

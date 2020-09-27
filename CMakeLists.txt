@@ -10,7 +10,7 @@ endif()
 
 project(mfeed VERSION 1.0
     DESCRIPTION "Mart's RSS Feed Reader"
-    LANGUAGES CXX)
+    LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -61,5 +61,65 @@ if(NOT json_POPULATED)
 endif()
 FetchContent_MakeAvailable(json)
 
-add_subdirectory(src)
+########
+# IMGUI
+########
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+
+# We need a CMAKE_DIR with some code to find external dependencies
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+#GLFW additions
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+# Packaged libraries
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(Freetype REQUIRED)
+
+add_subdirectory(vendor)
+
+######
+# SRC
+######
+add_executable(mfeed
+    src/main.cpp
+    src/test.cpp
+    src/imgui/imgui_impl_opengl3.cpp
+    src/rss/downloader.cpp
+    src/rss/extract.cpp
+    src/rss/feed.cpp
+    src/rss/data.cpp
+)
+
+target_compile_features(mfeed PRIVATE cxx_std_20)
+target_compile_options(mfeed PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+)
+target_include_directories(mfeed
+    PUBLIC
+        $<INSTALL_INTERFACE:vendor>    
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(mfeed
+    PRIVATE
+        fmt::fmt
+        ${CURL_LIBRARIES}
+        stdc++fs
+        pugixml
+        date
+        nlohmann_json::nlohmann_json
+        imgui
+        glfw
+        OpenGL::GL
+        glad
+        ${FREETYPE_LIBRARIES}
+        ${CMAKE_DL_LIBS}
+)
 

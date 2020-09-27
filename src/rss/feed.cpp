@@ -33,6 +33,13 @@ namespace rss
         is_pubdate >> date::parse("%F %T %z", this->pub_date);
     }
 
+    std::string feed_item::pub_date_str()
+    {
+        std::stringstream os_pubdate;
+        os_pubdate << date::format("%F %T", this->pub_date);
+        return os_pubdate.str();
+    }
+
     // feed
 
     void feed::new_item(feed_item &item)
