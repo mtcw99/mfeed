@@ -92,6 +92,7 @@ add_executable(mfeed
     src/rss/extract.cpp
     src/rss/feed.cpp
     src/rss/data.cpp
+    src/rss/link.cpp
 )
 
 target_compile_features(mfeed PRIVATE cxx_std_20)

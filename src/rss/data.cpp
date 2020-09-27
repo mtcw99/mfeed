@@ -57,7 +57,10 @@ namespace rss
         json["feeds_list"] = {};
         for (auto &feed : this->feeds_list)
         {
-            json["feeds_list"].push_back(feed.to_json());
+            if (!feed.erase)
+            {
+                json["feeds_list"].push_back(feed.to_json());
+            }
         }
 
         // Save to file
@@ -72,9 +75,37 @@ namespace rss
         this->feeds_list.push_back(new_feed);
     }
 
-    void data::new_feed(std::string_view url, std::string_view filename)
+    static std::string url_filename(std::string_view url)
     {
-        const std::string filepath = this->tmp_path + '/' + filename.data();
+        std::string filename;
+
+        for (auto &ch : url)
+        {
+            switch (ch)
+            {
+            case ':':
+            case '.':
+            case '/':
+            case '@':
+                break;
+            default:
+                filename += ch;
+            }
+        }
+        filename += ".rss";
+
+        return filename;
+    }
+
+    void data::new_feed(std::string_view url, std::string filename)
+    {
+        if (filename == "")
+        {
+            filename = url_filename(url);
+        }
+        //fmt::print("filename: {}\n", filename);
+
+        const std::string filepath = this->tmp_path + '/' + filename.c_str();
         if (!std::filesystem::exists(filepath))
         {
             rss::downloader::fetch(url, filepath);

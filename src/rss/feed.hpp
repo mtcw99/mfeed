@@ -39,6 +39,8 @@ namespace rss
 
         std::vector<feed_item> items;
 
+        bool erase = false;
+
         feed() = default;
         feed(nlohmann::json json);
         ~feed() = default;

@@ -12,6 +12,7 @@ namespace rss
         const std::string tmp_path = std::filesystem::temp_directory_path();
         std::string home_dir;
         std::vector<rss::feed> feeds_list;
+        std::string browser = "xdg-open";
 
         data();
         ~data() = default;
@@ -20,7 +21,7 @@ namespace rss
         void save(std::string_view filepath);
 
         void add(const rss::feed &new_feed);
-        void new_feed(std::string_view url, std::string_view filename);
+        void new_feed(std::string_view url, std::string filename = "");
     };
 }
 

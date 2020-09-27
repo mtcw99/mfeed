@@ -8,6 +8,7 @@
 
 #include "rss/data.hpp"
 #include "rss/feed.hpp"
+#include "rss/link.hpp"
 
 // GUI
 #include <glad/glad.h>
@@ -95,8 +96,10 @@ int main(int /*argc*/, char ** /*argv*/)
     ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 
     bool windows_newFeed = false;
+    bool windows_feedItemContent = false;
     int display_w, display_h;
     rss::feed *focus_feed = nullptr;
+    rss::feed_item *focus_item = nullptr;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -104,7 +107,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
         processInput(window);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Start the Dear ImGui frame
@@ -144,9 +147,13 @@ int main(int /*argc*/, char ** /*argv*/)
 
             for (auto &feed : data.feeds_list)
             {
-                if (ImGui::Button(feed.title.c_str(), ImVec2(sidebar_w - 20, 20)))
+                if (!feed.erase)
                 {
-                    focus_feed = &feed;
+                    if (ImGui::Selectable(feed.title.c_str(),
+                                (focus_feed == &feed)))
+                    {
+                        focus_feed = &feed;
+                    }
                 }
             }
 
@@ -160,16 +167,37 @@ int main(int /*argc*/, char ** /*argv*/)
 
             if (focus_feed != nullptr)
             {
-                ImGui::Text(focus_feed->title.c_str());
-                ImGui::Text(focus_feed->link.c_str());
-                ImGui::Text(focus_feed->description.c_str());
-                ImGui::Text(focus_feed->language.c_str());
-
-                ImGui::Separator();
-
-                for (auto &item : focus_feed->items)
+                if (ImGui::Button("Remove"))
                 {
-                    ImGui::Text(item.title.c_str());
+                    focus_feed->erase = true;
+                    focus_feed = nullptr;
+                }
+                else
+                {
+                    ImGui::Text(focus_feed->title.c_str());
+                    ImGui::Text(focus_feed->link.c_str());
+                    ImGui::Text(focus_feed->description.c_str());
+                    ImGui::Text(focus_feed->language.c_str());
+
+                    ImGui::Separator();
+
+                    for (uint32_t i = 0; i < focus_feed->items.size(); ++i)
+                    {
+                        auto &item = focus_feed->items[i];
+                        const std::string extraID = focus_feed->title + std::to_string(i);
+                        if (ImGui::Button(("Read##" + extraID).c_str()))
+                        {
+                            focus_item = &item;
+                            windows_feedItemContent = true;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button(("Open##" + extraID).c_str()))
+                        {
+                            rss::link::open(item.link, data.browser);
+                        }
+                        ImGui::SameLine();
+                        ImGui::TextWrapped(item.title.c_str());
+                    }
                 }
             }
 
@@ -179,25 +207,46 @@ int main(int /*argc*/, char ** /*argv*/)
         if (windows_newFeed)
         {   // New RSS Feed window
             {
-                static char name[512];
                 static char url[512];
                 ImGui::Begin("New Feed");
 
-                ImGui::InputText("name", name, 512);
                 ImGui::InputText("url", url, 512);
 
                 if (ImGui::Button("Create"))
                 {
-                    fmt::print("New feed: name: {} url: {}\n",
-                            name, url);
+                    data.new_feed(url);
+                    url[0] = '\0';
+                    windows_newFeed = false;
+                    focus_feed = nullptr;
                 }
 
                 if (ImGui::Button("Close"))
                 {
-                    name[0] = '\0';
                     url[0] = '\0';
                     windows_newFeed = false;
                 }
+
+                ImGui::End();
+            }
+        }
+
+        if (windows_feedItemContent && focus_item != nullptr)
+        {   // Feed item window
+            {
+                ImGui::Begin("Item");
+
+                if (ImGui::Button("Close"))
+                {
+                    windows_feedItemContent = false;
+                }
+
+                ImGui::Text(focus_item->title.c_str());
+                ImGui::Text(focus_item->link.c_str());
+                ImGui::Text(focus_item->pub_date_str().c_str());
+
+                ImGui::Separator();
+
+                ImGui::TextWrapped(focus_item->description.c_str());
 
                 ImGui::End();
             }
@@ -217,6 +266,8 @@ int main(int /*argc*/, char ** /*argv*/)
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    data.save("test.json");
 
 #if 0
     data.new_feed("https://www.phoronix.com/rss.php", "phoronix.rss");
