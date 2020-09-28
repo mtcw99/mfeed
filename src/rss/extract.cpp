@@ -20,28 +20,67 @@ namespace rss::extract
             return {};
         }
 
-        fmt::print("RSS Version: {}\n",
-                doc.child("rss").attribute("version").value());
+        pugi::xml_node find_rss = doc.child("rss");
+        pugi::xml_node find_atom = doc.child("feed");
 
-        pugi::xml_node channel = doc.child("rss").child("channel");
+        bool is_rss = (std::string(find_rss.name()) == "rss");
+        bool is_atom = (std::string(find_atom.name()) == "feed");
+        fmt::print("RSS: {} | Atom: {}\n",
+                find_rss.name(), find_atom.name());
 
-        feed.title = channel.child("title").child_value();
-        feed.link = channel.child("link").child_value();
-        feed.description = channel.child("description").child_value();
-        feed.language = channel.child("language").child_value();
+        if (is_rss)
+        {   // RSS 2.0
+#if 0
+            fmt::print("RSS Version: {}\n",
+                    doc.child("rss").attribute("version").value());
+#endif
+            pugi::xml_node channel = doc.child("rss").child("channel");
 
-        for (pugi::xml_node item : channel.children("item"))
-        {
-            feed_item feeditem;
+            feed.title = channel.child("title").child_value();
+            feed.link = channel.child("link").child_value();
+            feed.description = channel.child("description").child_value();
+            feed.language = channel.child("language").child_value();
 
-            feeditem.title = item.child("title").child_value();
-            feeditem.link = item.child("link").child_value();
-            feeditem.guid = item.child("guid").child_value();
-            feeditem.description = item.child("description").child_value();
-            std::istringstream pub_date_str(item.child("pubDate").child_value());
-            pub_date_str >> date::parse("%a, %d %b %Y %T %z", feeditem.pub_date);
+            for (pugi::xml_node item : channel.children("item"))
+            {
+                feed_item feeditem;
 
-            feed.new_item(feeditem);
+                feeditem.title = item.child("title").child_value();
+                feeditem.link = item.child("link").child_value();
+                feeditem.guid = item.child("guid").child_value();
+                feeditem.description = item.child("description").child_value();
+
+                // RFC 822 Timestamp
+                std::istringstream pub_date_str(item.child("pubDate").child_value());
+                pub_date_str >> date::parse("%a, %d %b %Y %T %z", feeditem.pub_date);
+
+                feed.new_item(feeditem);
+            }
+        }
+        else if (is_atom)
+        {   // Atom
+            pugi::xml_node author = doc.child("feed").child("author");
+
+            feed.title = author.child("name").child_value();
+            feed.link = author.child("uri").child_value();
+            feed.description = author.child("content").child_value();
+            feed.language = "";
+
+            for (pugi::xml_node item : doc.child("feed").children("entry"))
+            {
+                feed_item feeditem;
+
+                feeditem.title = item.child("title").child_value();
+                feeditem.link = item.child("link").attribute("href").value();
+                feeditem.guid = item.child("id").child_value();
+                feeditem.description = "";
+
+                // RFC 3339 Timestamp
+                std::istringstream pub_date_str(item.child("published").child_value());
+                pub_date_str >> date::parse("%FT%T%Ez", feeditem.pub_date);
+
+                feed.new_item(feeditem);
+            }
         }
 
         return feed;

@@ -213,6 +213,14 @@ int main(int /*argc*/, char ** /*argv*/)
 
                 ImGui::SameLine();
 
+                if (ImGui::Button("Setting"))
+                {
+
+                }
+
+                ImGui::SameLine();
+
+                // TODO: Have a popup dialog first
                 if (ImGui::Button("Remove"))
                 {
                     focus_feed->erase = true;
@@ -338,41 +346,6 @@ int main(int /*argc*/, char ** /*argv*/)
     glfwTerminate();
 
     data.save("test.json");
-
-#if 0
-    data.new_feed("https://www.phoronix.com/rss.php", "phoronix.rss");
-
-    rss::feed &feed = data.feeds_list[0];
-
-    fmt::print("Title: {}\nLink: {}\nDesc: {}\nLang: {}\n",
-            feed.title, feed.link, feed.description, feed.language);
-
-    for (auto &item : feed.items)
-    {
-        std::stringstream os_pubdate;
-        os_pubdate << date::format("%F %T", item.pub_date);
-        fmt::print("\nTitle: {}\nDate: {}\nLink: {}\nDescription: {}\n",
-                item.title, os_pubdate.str(), item.link, item.description);
-    }
-
-    data.save("test.json");
-    data.load("test.json");
-
-    for (auto &feed : data.feeds_list)
-    {
-        fmt::print("Title: {}\nLink: {}\nDesc: {}\nLang: {}\n",
-                feed.title, feed.link, feed.description, feed.language);
-
-        for (auto &item : feed.items)
-        {
-            fmt::print("\nTitle: {}\nDate: {}\nLink: {}\nDescription: {}\n",
-                    item.title, item.pub_date_str(), item.link, item.description);
-        }
-    }
-
-    std::cin.get();
-#endif
-
     return 0;
 }
 
