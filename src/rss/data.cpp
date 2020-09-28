@@ -47,6 +47,7 @@ namespace rss
             rss::feed feed(j_feed);
             this->feeds_list.push_back(feed);
         }
+        this->browser = json["browser"];
     }
 
     void data::save(std::string_view filepath)
@@ -62,6 +63,7 @@ namespace rss
                 json["feeds_list"].push_back(feed.to_json());
             }
         }
+        json["browser"] = this->browser;
 
         // Save to file
         std::ofstream save_file(save_path);

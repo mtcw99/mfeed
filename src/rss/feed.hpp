@@ -3,6 +3,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <map>
+#include <functional>
 #include <chrono>
 #include "date/date.h"       // Remove when gcc fully implements C++20 date feature
 #include <nlohmann/json.hpp>
@@ -25,6 +27,7 @@ namespace rss
 
         nlohmann::json to_json();
         std::string pub_date_str();
+        std::string key();
     };
 
     struct feed
@@ -37,7 +40,7 @@ namespace rss
         std::string description;
         std::string language;
 
-        std::vector<feed_item> items;
+        std::map<std::string, feed_item, std::greater<std::string>> items;
 
         bool erase = false;
 
@@ -47,6 +50,7 @@ namespace rss
 
         void new_item(feed_item &item);
         nlohmann::json to_json();
+        void update();
     };
 }
 

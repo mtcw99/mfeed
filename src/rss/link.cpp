@@ -6,8 +6,8 @@ namespace rss::link
 {
     void open(std::string_view url, std::string_view with)
     {
-        fmt::print("open url: {}\n", url);
-        system(fmt::format("{} {}", with, url).c_str());
+        fmt::print("Opening \"{}\" with {}\n", url, with);
+        system(fmt::format("{} \"{}\"", with, url).c_str());
     }
 }
 

@@ -21,6 +21,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+find_package(Threads)
+
 set(CURL_LIBRARY "-lcurl")
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
@@ -122,5 +124,6 @@ target_link_libraries(mfeed
         glad
         ${FREETYPE_LIBRARIES}
         ${CMAKE_DL_LIBS}
+	Threads::Threads
 )
 

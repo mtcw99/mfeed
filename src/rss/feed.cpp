@@ -1,7 +1,13 @@
 #include "feed.hpp"
 
+#include <fmt/format.h>
+
+#include <optional>
 #include <sstream>
 #include <date/date.h>
+
+#include "extract.hpp"
+#include "downloader.hpp"
 
 namespace rss
 {
@@ -40,11 +46,16 @@ namespace rss
         return os_pubdate.str();
     }
 
+    std::string feed_item::key()
+    {
+        return this->pub_date_str() + this->guid;
+    }
+
     // feed
 
     void feed::new_item(feed_item &item)
     {
-        this->items.push_back(item);
+        this->items[item.key()] = item;
     }
 
     nlohmann::json feed::to_json()
@@ -57,9 +68,9 @@ namespace rss
         json["description"] = this->description;
         json["language"] = this->language;
         json["items"] = {};
-        for (auto &item : this->items)
+        for (auto &[key, value] : this->items)
         {
-            json["items"].push_back(item.to_json());
+            json["items"].push_back(value.to_json());
         }
         return json;
     }
@@ -72,10 +83,29 @@ namespace rss
         this->link = json["link"];
         this->description = json["description"];
         this->language = json["language"];
-        for (auto &j_item : json["items"])
+        for (const auto &j_item : json["items"])
         {
             feed_item f_item(j_item);
-            this->items.push_back(f_item);
+            this->items[f_item.key()] = f_item;
+        }
+    }
+
+    void feed::update()
+    {
+        fmt::print("Update {} {}\n", this->url, this->tmp_path);
+        rss::downloader::fetch(this->url, this->tmp_path);
+        std::optional<rss::feed> feed_opt = rss::extract::parse(this->tmp_path);
+        if (feed_opt.has_value())
+        {
+            rss::feed &feed = feed_opt.value();
+            for (const auto &[key, value] : feed.items)
+            {
+                this->items[key] = value;
+            }
+        }
+        else
+        {
+            fmt::print(stderr, "ERROR: Failed to parse file.\n");
         }
     }
 }

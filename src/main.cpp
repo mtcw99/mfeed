@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <iostream>
 #include <sstream>
+#include <future>
 
 #include "date/date.h"
 #include <fmt/format.h>
@@ -61,7 +62,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
     // glfw window creation
     //=====================
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, PROG_NAME,
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, PROG_NAME,
             nullptr, nullptr);
 
     if (window == nullptr)
@@ -97,13 +98,33 @@ int main(int /*argc*/, char ** /*argv*/)
 
     bool windows_newFeed = false;
     bool windows_feedItemContent = false;
+    bool windows_settings = false;
     int display_w, display_h;
+    char browser[256];
+    double time_previous = glfwGetTime();
+    uint32_t frame_count = 0;
+    uint32_t fps = 0;
+    double msf = 0.0;
     rss::feed *focus_feed = nullptr;
     rss::feed_item *focus_item = nullptr;
 
     while (!glfwWindowShouldClose(window))
     {
+#if 1
         glfwWaitEvents();
+#else
+        glfwPollEvents();
+#endif
+
+        double time_current = glfwGetTime();
+        ++frame_count;
+        if (time_current - time_previous >= 1.0)
+        {
+            msf = static_cast<double>(1000.0 / double(frame_count));
+            fps = static_cast<uint32_t>(1000.0 / msf);
+            frame_count = 0;
+            time_previous = time_current;
+        }
 
         processInput(window);
 
@@ -125,12 +146,27 @@ int main(int /*argc*/, char ** /*argv*/)
                     windows_newFeed = true;
                 }
 
+                if (ImGui::MenuItem("Settings"))
+                {
+                    windows_settings = true;
+                    strcpy(browser, data.browser.c_str());
+                }
+
                 if (ImGui::MenuItem("Quit"))
                 {
                     glfwSetWindowShouldClose(window, true);
                 }
                 ImGui::EndMenu();
             }
+
+            ImGui::Separator();
+            ImGui::Text(fmt::format("Current: {}",
+                        (focus_feed != nullptr) ? focus_feed->title : "None"
+                        ).c_str());
+            ImGui::Spacing();
+            ImGui::Text(fmt::format("FPS: {}", fps).c_str());
+            ImGui::Spacing();
+            ImGui::Text(fmt::format("ms/f: {:.2f}", msf).c_str());
             ImGui::EndMainMenuBar();
         }
 
@@ -167,6 +203,16 @@ int main(int /*argc*/, char ** /*argv*/)
 
             if (focus_feed != nullptr)
             {
+                if (ImGui::Button("Update"))
+                {
+                    auto async_val = std::async(std::launch::async,
+                            [&focus_feed]{
+                                focus_feed->update();
+                            });
+                }
+
+                ImGui::SameLine();
+
                 if (ImGui::Button("Remove"))
                 {
                     focus_feed->erase = true;
@@ -181,10 +227,9 @@ int main(int /*argc*/, char ** /*argv*/)
 
                     ImGui::Separator();
 
-                    for (uint32_t i = 0; i < focus_feed->items.size(); ++i)
+                    for (auto &[i_key, item] : focus_feed->items)
                     {
-                        auto &item = focus_feed->items[i];
-                        const std::string extraID = focus_feed->title + std::to_string(i);
+                        const std::string extraID = focus_feed->title + i_key;
                         if (ImGui::Button(("Read##" + extraID).c_str()))
                         {
                             focus_item = &item;
@@ -195,6 +240,8 @@ int main(int /*argc*/, char ** /*argv*/)
                         {
                             rss::link::open(item.link, data.browser);
                         }
+                        ImGui::SameLine();
+                        ImGui::Text((item.pub_date_str() + " |").c_str());
                         ImGui::SameLine();
                         ImGui::TextWrapped(item.title.c_str());
                     }
@@ -247,6 +294,29 @@ int main(int /*argc*/, char ** /*argv*/)
                 ImGui::Separator();
 
                 ImGui::TextWrapped(focus_item->description.c_str());
+
+                ImGui::End();
+            }
+        }
+
+        if (windows_settings)
+        {   // Settings window
+            {
+                ImGui::Begin("Settings");
+
+                if (ImGui::Button("Close"))
+                {
+                    windows_settings = false;
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Save"))
+                {
+                    data.browser = browser;
+                }
+
+                ImGui::InputText("Browser", browser, 256);
 
                 ImGui::End();
             }
