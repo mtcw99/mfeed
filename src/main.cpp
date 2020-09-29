@@ -99,6 +99,8 @@ int main(int /*argc*/, char ** /*argv*/)
     bool windows_newFeed = false;
     bool windows_feedItemContent = false;
     bool windows_settings = false;
+    bool windows_feed_settings = false;
+    bool windows_feed_settings_new = false;
     int display_w, display_h;
     char browser[256];
     double time_previous = glfwGetTime();
@@ -159,6 +161,23 @@ int main(int /*argc*/, char ** /*argv*/)
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("Feeds"))
+            {
+                if (ImGui::MenuItem("Update All"))
+                {
+                    std::thread{[&data] {
+                                for (auto &feed : data.feeds_list)
+                                {
+                                    std::thread{[&feed] {
+                                                feed.update();
+                                            }}.detach();
+                                }
+                            }}.detach();
+                }
+
+                ImGui::EndMenu();
+            }
+
             ImGui::Separator();
             ImGui::Text(fmt::format("Current: {}",
                         (focus_feed != nullptr) ? focus_feed->title : "None"
@@ -205,17 +224,17 @@ int main(int /*argc*/, char ** /*argv*/)
             {
                 if (ImGui::Button("Update"))
                 {
-                    auto async_val = std::async(std::launch::async,
-                            [&focus_feed]{
+                    std::thread{[&focus_feed]{
                                 focus_feed->update();
-                            });
+                            }}.detach();
                 }
 
                 ImGui::SameLine();
 
                 if (ImGui::Button("Setting"))
                 {
-
+                    windows_feed_settings = true;
+                    windows_feed_settings_new = true;
                 }
 
                 ImGui::SameLine();
@@ -295,6 +314,22 @@ int main(int /*argc*/, char ** /*argv*/)
                     windows_feedItemContent = false;
                 }
 
+                ImGui::SameLine();
+
+                if (ImGui::Button("Open"))
+                {
+                    rss::link::open(focus_item->link, data.browser);
+                }
+
+                for (const auto &line : focus_feed->open_with)
+                {
+                    ImGui::SameLine();
+                    if (ImGui::Button(("Open (" + line + ")").c_str()))
+                    {
+                        rss::link::open(focus_item->link, line);
+                    }
+                }
+
                 ImGui::Text(focus_item->title.c_str());
                 ImGui::Text(focus_item->link.c_str());
                 ImGui::Text(focus_item->pub_date_str().c_str());
@@ -308,7 +343,7 @@ int main(int /*argc*/, char ** /*argv*/)
         }
 
         if (windows_settings)
-        {   // Settings window
+        {   // Main Settings window
             {
                 ImGui::Begin("Settings");
 
@@ -325,6 +360,53 @@ int main(int /*argc*/, char ** /*argv*/)
                 }
 
                 ImGui::InputText("Browser", browser, 256);
+
+                ImGui::End();
+            }
+        }
+
+        if (windows_feed_settings)
+        {   // Feed settings window
+            {
+                static char openas_buffer[1024];
+                ImGui::Begin("Feed Settings");
+
+                if (windows_feed_settings_new)
+                {   // When this window pops up as new
+                    std::string openas_buffer_str = "";
+                    for (const auto &str : focus_feed->open_with)
+                    {
+                        openas_buffer_str += str + '\n';
+                    }
+                    strcpy(openas_buffer, openas_buffer_str.c_str());
+
+                    windows_feed_settings_new = false;
+                }
+
+                if (ImGui::Button("Close"))
+                {
+                    windows_feed_settings = false;
+                    openas_buffer[0] = '\0';
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Save"))
+                {
+                    std::string line;
+                    std::stringstream ss(openas_buffer);
+                    focus_feed->open_with.clear();
+                    while (std::getline(ss, line))
+                    {
+                        focus_feed->open_with.push_back(line);
+                    }
+
+                    windows_feed_settings = false;
+                    openas_buffer[0] = '\0';
+                }
+
+                ImGui::InputTextMultiline("Open as...", openas_buffer,
+                        1024);
 
                 ImGui::End();
             }

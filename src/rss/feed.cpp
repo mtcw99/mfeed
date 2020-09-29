@@ -72,6 +72,11 @@ namespace rss
         {
             json["items"].push_back(value.to_json());
         }
+        json["open_with"] = {};
+        for (auto &line : this->open_with)
+        {
+            json["open_with"].push_back(line);
+        }
         return json;
     }
 
@@ -87,6 +92,10 @@ namespace rss
         {
             feed_item f_item(j_item);
             this->items[f_item.key()] = f_item;
+        }
+        for (const auto &line : json["open_with"])
+        {
+            this->open_with.push_back(line);
         }
     }
 

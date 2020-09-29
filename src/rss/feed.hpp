@@ -41,6 +41,7 @@ namespace rss
         std::string language;
 
         std::map<std::string, feed_item, std::greater<std::string>> items;
+        std::vector<std::string> open_with;
 
         bool erase = false;
 
