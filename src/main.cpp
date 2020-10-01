@@ -86,11 +86,17 @@ int main(int /*argc*/, char ** /*argv*/)
 
     // IMGUI settings
     //===============
+    const float FONT_SIZE = 20.0;
+    const float SCALE_SIZE = 1.8;
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF("/usr/share/fonts/noto/NotoSans-Regular.ttf", FONT_SIZE);
 
+    ImGuiStyle &style = ImGui::GetStyle();
+    style.ScaleAllSizes(SCALE_SIZE);
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -189,7 +195,7 @@ int main(int /*argc*/, char ** /*argv*/)
             ImGui::EndMainMenuBar();
         }
 
-        const uint32_t mainbar_size = 20;
+        const uint32_t mainbar_size = static_cast<uint32_t>(20 * SCALE_SIZE);
         const uint32_t sidebar_w = display_w / 4;
         const uint32_t sidebar_h = display_h - mainbar_size;
         const uint32_t main_w = display_w - sidebar_w;
