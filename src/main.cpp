@@ -202,20 +202,35 @@ int main(int /*argc*/, char ** /*argv*/)
         const uint32_t main_h = display_h - mainbar_size;
 
         {   // RSS Feeds Sidebar
+            static char search_buffer[1024];
+
             ImGui::SetNextWindowPos(ImVec2(0, mainbar_size));
             ImGui::SetNextWindowSize(ImVec2(sidebar_w, sidebar_h));
             ImGui::Begin("Feeds");
 
-            for (auto &feed : data.feeds_list)
+            ImGui::InputText("Search", search_buffer, 1024);
+
+            ImGui::Separator();
+
+            if (ImGui::BeginChild("Feeds List"))
             {
-                if (!feed.erase)
+                for (auto &feed : data.feeds_list)
                 {
-                    if (ImGui::Selectable(feed.title.c_str(),
-                                (focus_feed == &feed)))
+                    if (!feed.erase &&
+                            (feed.title.starts_with(search_buffer) ||
+                             (feed.tags_check(search_buffer)) ||
+                             (search_buffer[0] == '\0')))
                     {
-                        focus_feed = &feed;
+                        if (ImGui::Selectable((feed.title + " " +
+                                        feed.tags_str()).c_str(),
+                                    (focus_feed == &feed)))
+                        {
+                            focus_feed = &feed;
+                        }
                     }
                 }
+
+                ImGui::EndChild();
             }
 
             ImGui::End();
@@ -274,7 +289,7 @@ int main(int /*argc*/, char ** /*argv*/)
                             rss::link::open(item.link, data.browser);
                         }
                         ImGui::SameLine();
-                        ImGui::Text((item.pub_date_str() + " |").c_str());
+                        ImGui::Text(item.pub_date_str().c_str());
                         ImGui::SameLine();
                         ImGui::TextWrapped(item.title.c_str());
                     }
@@ -375,16 +390,21 @@ int main(int /*argc*/, char ** /*argv*/)
         {   // Feed settings window
             {
                 static char openas_buffer[1024];
+                static char tags_buffer[1024];
                 ImGui::Begin("Feed Settings");
 
                 if (windows_feed_settings_new)
                 {   // When this window pops up as new
+                    // Open As...
                     std::string openas_buffer_str = "";
                     for (const auto &str : focus_feed->open_with)
                     {
                         openas_buffer_str += str + '\n';
                     }
                     strcpy(openas_buffer, openas_buffer_str.c_str());
+
+                    // Tags
+                    strcpy(tags_buffer, focus_feed->tags_nl_str().c_str());
 
                     windows_feed_settings_new = false;
                 }
@@ -393,12 +413,14 @@ int main(int /*argc*/, char ** /*argv*/)
                 {
                     windows_feed_settings = false;
                     openas_buffer[0] = '\0';
+                    tags_buffer[0] = '\0';
                 }
 
                 ImGui::SameLine();
 
                 if (ImGui::Button("Save"))
                 {
+                    // Open As...
                     std::string line;
                     std::stringstream ss(openas_buffer);
                     focus_feed->open_with.clear();
@@ -407,11 +429,27 @@ int main(int /*argc*/, char ** /*argv*/)
                         focus_feed->open_with.push_back(line);
                     }
 
+                    // Tags
+                    line = "";
+                    ss = std::stringstream(tags_buffer);
+                    focus_feed->tags.clear();
+                    while (std::getline(ss, line))
+                    {
+                        if (line != "")
+                        {
+                            focus_feed->tags.push_back(line);
+                        }
+                    }
+
                     windows_feed_settings = false;
                     openas_buffer[0] = '\0';
+                    tags_buffer[0] = '\0';
                 }
 
                 ImGui::InputTextMultiline("Open as...", openas_buffer,
+                        1024);
+
+                ImGui::InputTextMultiline("Tags", tags_buffer,
                         1024);
 
                 ImGui::End();

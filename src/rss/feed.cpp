@@ -77,6 +77,11 @@ namespace rss
         {
             json["open_with"].push_back(line);
         }
+        json["tags"] = {};
+        for (auto &tag : this->tags)
+        {
+            json["tags"].push_back(tag);
+        }
         return json;
     }
 
@@ -97,6 +102,10 @@ namespace rss
         {
             this->open_with.push_back(line);
         }
+        for (const auto &tag : json["tags"])
+        {
+            this->tags.push_back(tag);
+        }
     }
 
     void feed::update()
@@ -116,6 +125,60 @@ namespace rss
         {
             fmt::print(stderr, "ERROR: Failed to parse file.\n");
         }
+    }
+
+    std::string feed::tags_str()
+    {
+        if (this->tags.size() == 0)
+        {
+            return "";
+        }
+
+        std::string str = "(";
+
+        for (const auto &tag : this->tags)
+        {
+            if (&tag == &this->tags.back())
+            {
+                str += tag + ")";
+            }
+            else
+            {
+                str += tag + ",";
+            }
+        }
+
+        return str;
+    }
+
+    std::string feed::tags_nl_str()
+    {
+        if (this->tags.size() == 0)
+        {
+            return "";
+        }
+
+        std::string str = "";
+
+        for (const auto &tag : this->tags)
+        {
+            str += tag + '\n';
+        }
+
+        return str;
+    }
+
+    bool feed::tags_check(std::string_view search_buffer)
+    {
+        for (const auto &tag : this->tags)
+        {
+            if (tag.starts_with(search_buffer))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

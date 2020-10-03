@@ -42,6 +42,7 @@ namespace rss
 
         std::map<std::string, feed_item, std::greater<std::string>> items;
         std::vector<std::string> open_with;
+        std::vector<std::string> tags;
 
         bool erase = false;
 
@@ -52,6 +53,9 @@ namespace rss
         void new_item(feed_item &item);
         nlohmann::json to_json();
         void update();
+        std::string tags_str();
+        std::string tags_nl_str();
+        bool tags_check(std::string_view search_buffer);
     };
 }
 
