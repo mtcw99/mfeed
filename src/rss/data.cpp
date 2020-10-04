@@ -3,6 +3,7 @@
 #include <optional>
 #include <fstream>
 #include <memory>
+#include <filesystem>
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
@@ -21,6 +22,7 @@ namespace rss
     data::data()
     {
         const char *home_dir = nullptr;
+        const char *config_dir = nullptr;
 
         if ((home_dir = getenv("HOME")) == nullptr)
         {
@@ -28,11 +30,30 @@ namespace rss
         }
 
         this->home_dir = home_dir;
+
+        if ((config_dir = getenv("XDG_CONFIG_HOME")) == nullptr ||
+                config_dir[0] == '\0')
+        {
+            this->config_dir = this->home_dir + "/.config";
+        }
+        else
+        {
+            this->config_dir = config_dir;
+        }
+
+        this->config_dir += "/mfeed";
+
+        if (!std::filesystem::exists(this->config_dir))
+        {
+            std::filesystem::create_directories(this->config_dir);
+        }
+
+        fmt::print("Config dir: {}\n", this->config_dir);
     }
 
     void data::load(std::string_view filepath)
     {
-        const std::string load_path = this->home_dir + '/' + filepath.data();
+        const std::string load_path = this->config_dir + '/' + filepath.data();
         if (!std::filesystem::exists(load_path))
         {
             return;
@@ -54,7 +75,7 @@ namespace rss
 
     void data::save(std::string_view filepath)
     {
-        const std::string save_path = this->home_dir + '/' + filepath.data();
+        const std::string save_path = this->config_dir + '/' + filepath.data();
         nlohmann::json json;
 
         json["feeds_list"] = {};
@@ -76,7 +97,7 @@ namespace rss
 
     void data::load_fb(std::string_view filepath)
     {
-        const std::string load_path = this->home_dir + '/' + filepath.data();
+        const std::string load_path = this->config_dir + '/' + filepath.data();
         if (!std::filesystem::exists(load_path))
         {
             return;
@@ -107,7 +128,7 @@ namespace rss
 
     void data::save_fb(std::string_view filepath)
     {
-        const std::string save_path = this->home_dir + '/' + filepath.data();
+        const std::string save_path = this->config_dir + '/' + filepath.data();
 
         flatbuffers::FlatBufferBuilder builder;
 

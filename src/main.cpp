@@ -47,7 +47,7 @@ static void glfw_error_callback(int32_t error, const char *description)
 int main(int /*argc*/, char ** /*argv*/)
 {
     rss::data data;
-    data.load_fb("test.fbb");
+    data.load_fb("data.fbb");
 
     // glfw: initialize and configure
     //================================
@@ -479,7 +479,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
     if (save_on_exit)
     {
-        data.save_fb("test.fbb");
+        data.save_fb("data.fbb");
     }
     return 0;
 }
