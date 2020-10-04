@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <fstream>
+#include <memory>
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
@@ -81,6 +82,27 @@ namespace rss
             return;
         }
 
+        std::ifstream in_file;
+        in_file.open(load_path, std::ios::binary | std::ios::in);
+        in_file.seekg(0, std::ios::end);
+        uint32_t length = in_file.tellg();
+        in_file.seekg(0, std::ios::beg);
+        std::unique_ptr<char []> data = std::make_unique<char []>(length);
+        in_file.read(data.get(), length);
+        in_file.close();
+
+        auto rss_data = mfeed_fb::rss_data::GetRSSData(data.get());
+
+        auto fb_feeds_list = rss_data->feeds_list();
+        for (uint32_t i = 0; i < fb_feeds_list->size(); ++i)
+        {
+            rss::feed feed(fb_feeds_list->Get(i));
+            this->feeds_list.push_back(feed);
+        }
+
+        this->browser = rss_data->browser()->str();
+
+        fmt::print("Loaded: {} from {}\n", length, load_path);
     }
 
     void data::save_fb(std::string_view filepath)
@@ -99,10 +121,18 @@ namespace rss
         }
         auto fb_browser = builder.CreateString(this->browser);
 
-        auto fb_root = mfeed_fb::rss_data::CreateRSSData(builder,
+        builder.Finish(mfeed_fb::rss_data::CreateRSSData(builder,
                 builder.CreateVector(vec_feeds_list),
-                fb_browser);
-        builder.Finish(fb_root);
+                fb_browser));
+
+        uint8_t *fb_buf = builder.GetBufferPointer();
+        uint32_t size = builder.GetSize();
+
+        std::ofstream out_file;
+        out_file.open(save_path, std::ios::binary | std::ios::out);
+        out_file.write(reinterpret_cast<const char *>(fb_buf), size);
+        out_file.close();
+        fmt::print("Written: {} bytes to: {}\n", size, save_path);
     }
 
     void data::add(const rss::feed &new_feed)

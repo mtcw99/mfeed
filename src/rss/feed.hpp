@@ -25,6 +25,7 @@ namespace rss
 
         feed_item() = default;
         feed_item(nlohmann::json json);
+        feed_item(const mfeed_fb::rss_data::Item *fb_item);
 
         nlohmann::json to_json();
         std::string pub_date_str();
@@ -50,6 +51,7 @@ namespace rss
 
         feed() = default;
         feed(nlohmann::json json);
+        feed(const mfeed_fb::rss_data::Feed *fb_feed);
         ~feed() = default;
 
         void new_item(feed_item &item);

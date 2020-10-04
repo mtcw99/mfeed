@@ -1,3 +1,5 @@
+namespace mfeed_fb.rss_data;
+
 table Item {
   title: string;
   link: string;
@@ -22,4 +24,6 @@ table RSSData {
   feeds_list: [Feed];
   browser: string;
 }
+
+root_type RSSData;
 

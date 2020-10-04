@@ -54,7 +54,23 @@ namespace rss
     flatbuffers::Offset<mfeed_fb::rss_data::Item>
     feed_item::to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb)
     {
-        return mfeed_fb::rss_data::CreateItem(fbb);
+        return mfeed_fb::rss_data::CreateItem(fbb,
+                fbb.CreateString(this->title),
+                fbb.CreateString(this->link),
+                fbb.CreateString(this->guid),
+                fbb.CreateString(this->description),
+                fbb.CreateString(this->pub_date_str()));
+    }
+
+    feed_item::feed_item(const mfeed_fb::rss_data::Item *fb_item)
+    {
+        this->title = fb_item->title()->str();
+        this->link = fb_item->link()->str();
+        this->guid = fb_item->guid()->str();
+        this->description = fb_item->description()->str();
+
+        std::stringstream is_pubdate(fb_item->pub_date()->str());
+        is_pubdate >> date::parse("%F %T", this->pub_date);
     }
 
     // feed
@@ -218,6 +234,35 @@ namespace rss
                 fbb.CreateVector(vec_items),
                 fbb.CreateVector(vec_open_with),
                 fbb.CreateVector(vec_tags));
+    }
+
+    feed::feed(const mfeed_fb::rss_data::Feed *fb_feed)
+    {
+        this->url = fb_feed->url()->str();
+        this->tmp_path = fb_feed->tmp_path()->str();
+        this->title = fb_feed->title()->str();
+        this->link = fb_feed->link()->str();
+        this->description = fb_feed->description()->str();
+        this->language = fb_feed->language()->str();
+
+        auto fb_vec_items = fb_feed->items();
+        for (uint32_t i = 0; i < fb_vec_items->size(); ++i)
+        {
+            feed_item f_item(fb_vec_items->Get(i));
+            this->items[f_item.key()] = f_item;
+        }
+
+        auto fb_vec_open_with = fb_feed->open_with();
+        for (uint32_t i = 0; i < fb_vec_open_with->size(); ++i)
+        {
+            this->open_with.push_back(fb_vec_open_with->Get(i)->str());
+        }
+
+        auto fb_vec_tags = fb_feed->tags();
+        for (uint32_t i = 0; i < fb_vec_tags->size(); ++i)
+        {
+            this->tags.push_back(fb_vec_tags->Get(i)->str());
+        }
     }
 }
 

@@ -47,7 +47,7 @@ static void glfw_error_callback(int32_t error, const char *description)
 int main(int /*argc*/, char ** /*argv*/)
 {
     rss::data data;
-    data.load("test.json");
+    data.load_fb("test.fbb");
 
     // glfw: initialize and configure
     //================================
@@ -102,6 +102,7 @@ int main(int /*argc*/, char ** /*argv*/)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 
+    bool save_on_exit = true;
     bool windows_newFeed = false;
     bool windows_feedItemContent = false;
     bool windows_settings = false;
@@ -162,6 +163,12 @@ int main(int /*argc*/, char ** /*argv*/)
 
                 if (ImGui::MenuItem("Quit"))
                 {
+                    glfwSetWindowShouldClose(window, true);
+                }
+
+                if (ImGui::MenuItem("Quit without Saving"))
+                {
+                    save_on_exit = false;
                     glfwSetWindowShouldClose(window, true);
                 }
                 ImGui::EndMenu();
@@ -470,7 +477,10 @@ int main(int /*argc*/, char ** /*argv*/)
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    data.save("test.json");
+    if (save_on_exit)
+    {
+        data.save_fb("test.fbb");
+    }
     return 0;
 }
 
