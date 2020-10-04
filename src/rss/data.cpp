@@ -5,6 +5,7 @@
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
+#include "flatbuffers/rss_data_generated.h"
 
 #include "downloader.hpp"
 #include "extract.hpp"
@@ -70,6 +71,38 @@ namespace rss
         save_file << json << std::endl;
 
         fmt::print("Saved to: {}\n", save_path);
+    }
+
+    void data::load_fb(std::string_view filepath)
+    {
+        const std::string load_path = this->home_dir + '/' + filepath.data();
+        if (!std::filesystem::exists(load_path))
+        {
+            return;
+        }
+
+    }
+
+    void data::save_fb(std::string_view filepath)
+    {
+        const std::string save_path = this->home_dir + '/' + filepath.data();
+
+        flatbuffers::FlatBufferBuilder builder;
+
+        std::vector<flatbuffers::Offset<mfeed_fb::rss_data::Feed>> vec_feeds_list;
+        for (auto &feed : this->feeds_list)
+        {
+            if (!feed.erase)
+            {
+                vec_feeds_list.push_back(feed.to_flatbuffer(builder));
+            }
+        }
+        auto fb_browser = builder.CreateString(this->browser);
+
+        auto fb_root = mfeed_fb::rss_data::CreateRSSData(builder,
+                builder.CreateVector(vec_feeds_list),
+                fb_browser);
+        builder.Finish(fb_root);
     }
 
     void data::add(const rss::feed &new_feed)

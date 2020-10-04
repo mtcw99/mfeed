@@ -16,6 +16,7 @@ Mart's (Graphical) RSS Feed Reader written in C++20 + imgui
 These are already embedded in the project
 * [imgui](https://github.com/ocornut/imgui)
 * [glad](https://glad.dav1d.de/)
+* [flatbuffers](https://github.com/google/flatbuffers)
 
 #### cmake FetchContent
 cmake just automaically will just fetch them so no actions needed

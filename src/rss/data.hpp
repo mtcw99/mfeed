@@ -20,6 +20,9 @@ namespace rss
         void load(std::string_view filepath);
         void save(std::string_view filepath);
 
+        void load_fb(std::string_view filepath);
+        void save_fb(std::string_view filepath);
+
         void add(const rss::feed &new_feed);
         void new_feed(std::string_view url, std::string filename = "");
     };

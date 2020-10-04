@@ -1,0 +1,25 @@
+table Item {
+  title: string;
+  link: string;
+  guid: string;
+  description: string;
+  pub_date: string;
+}
+
+table Feed {
+  url: string;
+  tmp_path: string;
+  title: string;
+  link: string;
+  description: string;
+  language: string;
+  items: [Item];
+  open_with: [string];
+  tags: [string];
+}
+
+table RSSData {
+  feeds_list: [Feed];
+  browser: string;
+}
+

@@ -8,6 +8,7 @@
 #include <chrono>
 #include "date/date.h"       // Remove when gcc fully implements C++20 date feature
 #include <nlohmann/json.hpp>
+#include "flatbuffers/rss_data_generated.h"
 
 // C++20:
 // - date:: TO std::chrono::
@@ -28,6 +29,7 @@ namespace rss
         nlohmann::json to_json();
         std::string pub_date_str();
         std::string key();
+        flatbuffers::Offset<mfeed_fb::rss_data::Item> to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb);
     };
 
     struct feed
@@ -56,6 +58,7 @@ namespace rss
         std::string tags_str();
         std::string tags_nl_str();
         bool tags_check(std::string_view search_buffer);
+        flatbuffers::Offset<mfeed_fb::rss_data::Feed> to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb);
     };
 }
 

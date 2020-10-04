@@ -51,6 +51,12 @@ namespace rss
         return this->pub_date_str() + this->guid;
     }
 
+    flatbuffers::Offset<mfeed_fb::rss_data::Item>
+    feed_item::to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb)
+    {
+        return mfeed_fb::rss_data::CreateItem(fbb);
+    }
+
     // feed
 
     void feed::new_item(feed_item &item)
@@ -179,6 +185,39 @@ namespace rss
         }
 
         return false;
+    }
+
+    flatbuffers::Offset<mfeed_fb::rss_data::Feed>
+    feed::to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb)
+    {
+        std::vector<flatbuffers::Offset<mfeed_fb::rss_data::Item>> vec_items;
+        for (auto &[key, value] : this->items)
+        {
+            vec_items.push_back(value.to_flatbuffer(fbb));
+        }
+
+        std::vector<flatbuffers::Offset<flatbuffers::String>> vec_open_with;
+        for (auto &line : this->open_with)
+        {
+            vec_open_with.push_back(fbb.CreateString(line));
+        }
+
+        std::vector<flatbuffers::Offset<flatbuffers::String>> vec_tags;
+        for (auto &tag : this->tags)
+        {
+            vec_tags.push_back(fbb.CreateString(tag));
+        }
+
+        return mfeed_fb::rss_data::CreateFeed(fbb,
+                fbb.CreateString(this->url),
+                fbb.CreateString(this->tmp_path),
+                fbb.CreateString(this->title),
+                fbb.CreateString(this->link),
+                fbb.CreateString(this->description),
+                fbb.CreateString(this->language),
+                fbb.CreateVector(vec_items),
+                fbb.CreateVector(vec_open_with),
+                fbb.CreateVector(vec_tags));
     }
 }
 
