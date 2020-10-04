@@ -229,9 +229,8 @@ int main(int /*argc*/, char ** /*argv*/)
                         }
                     }
                 }
-
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
 
             ImGui::End();
         }
