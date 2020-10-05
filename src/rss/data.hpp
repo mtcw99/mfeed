@@ -14,6 +14,7 @@ namespace rss
         std::string config_dir;
         std::vector<rss::feed> feeds_list;
         std::string browser = "xdg-open";
+        bool load_cjk = true;
 
         data();
         ~data() = default;

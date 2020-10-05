@@ -92,8 +92,46 @@ int main(int /*argc*/, char ** /*argv*/)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    //io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF("/usr/share/fonts/noto/NotoSans-Regular.ttf", FONT_SIZE);
+    ImFontConfig fontConfig;
+    fontConfig.MergeMode = true;
+    fontConfig.OversampleH = 1;
+    fontConfig.OversampleV = 1;
+    io.Fonts->AddFontFromFileTTF("/usr/share/fonts/noto/NotoSans-Regular.ttf",
+            FONT_SIZE);
+    const char *notosanscjk = "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc";
+#if 0
+    if (data.load_cjk)
+    {
+        io.Fonts->AddFontFromFileTTF(notosanscjk,
+                FONT_SIZE, &fontConfig, io.Fonts->GetGlyphRangesChineseFull());
+        io.Fonts->AddFontFromFileTTF(notosanscjk,
+                FONT_SIZE, &fontConfig, io.Fonts->GetGlyphRangesJapanese());
+        io.Fonts->AddFontFromFileTTF(notosanscjk,
+                FONT_SIZE, &fontConfig, io.Fonts->GetGlyphRangesKorean());
+        io.Fonts->Build();
+    }
+#endif
+    ImVector<ImWchar> imRanges;
+    ImFontGlyphRangesBuilder imRangesBuilder;
+
+    for (const auto &feed : data.feeds_list)
+    {
+        if (feed.language.starts_with("zh"))
+        {
+            imRangesBuilder.AddText(feed.title.c_str());
+            imRangesBuilder.AddText(feed.description.c_str());
+            for (const auto &[_, item] : feed.items)
+            {
+                imRangesBuilder.AddText(item.title.c_str());
+                imRangesBuilder.AddText(item.description.c_str());
+            }
+        }
+    }
+
+    imRangesBuilder.BuildRanges(&imRanges);
+    io.Fonts->AddFontFromFileTTF(notosanscjk,
+            FONT_SIZE, &fontConfig, imRanges.Data);
+    io.Fonts->Build();
 
     ImGuiStyle &style = ImGui::GetStyle();
     style.ScaleAllSizes(SCALE_SIZE);
