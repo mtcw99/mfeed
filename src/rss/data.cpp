@@ -6,7 +6,6 @@
 #include <filesystem>
 
 #include <fmt/format.h>
-#include <nlohmann/json.hpp>
 #include "flatbuffers/rss_data_generated.h"
 
 #include "downloader.hpp"
@@ -49,50 +48,6 @@ namespace rss
         }
 
         fmt::print("Config dir: {}\n", this->config_dir);
-    }
-
-    void data::load(std::string_view filepath)
-    {
-        const std::string load_path = this->config_dir + '/' + filepath.data();
-        if (!std::filesystem::exists(load_path))
-        {
-            return;
-        }
-        nlohmann::json json;
-
-        // Load json file
-        std::ifstream load_file(load_path);
-        load_file >> json;
-
-        this->feeds_list.clear();
-        for (auto &j_feed : json["feeds_list"])
-        {
-            rss::feed feed(j_feed);
-            this->feeds_list.push_back(feed);
-        }
-        this->browser = json["browser"];
-    }
-
-    void data::save(std::string_view filepath)
-    {
-        const std::string save_path = this->config_dir + '/' + filepath.data();
-        nlohmann::json json;
-
-        json["feeds_list"] = {};
-        for (auto &feed : this->feeds_list)
-        {
-            if (!feed.erase)
-            {
-                json["feeds_list"].push_back(feed.to_json());
-            }
-        }
-        json["browser"] = this->browser;
-
-        // Save to file
-        std::ofstream save_file(save_path);
-        save_file << json << std::endl;
-
-        fmt::print("Saved to: {}\n", save_path);
     }
 
     void data::load_fb(std::string_view filepath)

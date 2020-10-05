@@ -18,6 +18,7 @@ table Feed {
   items: [Item];
   open_with: [string];
   tags: [string];
+  update_date: string;
 }
 
 table RSSData {

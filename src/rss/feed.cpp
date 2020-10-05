@@ -4,7 +4,6 @@
 
 #include <optional>
 #include <sstream>
-#include <date/date.h>
 
 #include "extract.hpp"
 #include "downloader.hpp"
@@ -12,32 +11,6 @@
 namespace rss
 {
     // feed_item
-
-    nlohmann::json feed_item::to_json()
-    {
-        nlohmann::json json;
-        json["title"] = this->title;
-        json["link"] = this->link;
-        json["guid"] = this->guid;
-        json["description"] = this->description;
-
-        std::stringstream os_pubdate;
-        os_pubdate << date::format("%F %T %z", this->pub_date);
-        json["pub_date"] = os_pubdate.str();
-        return json;
-    }
-
-    feed_item::feed_item(nlohmann::json json)
-    {
-        this->title = json["title"];
-        this->link = json["link"];
-        this->guid = json["guid"];
-        this->description = json["description"];
-
-        const std::string s_pubdate = json["pub_date"];
-        std::stringstream is_pubdate(s_pubdate);
-        is_pubdate >> date::parse("%F %T %z", this->pub_date);
-    }
 
     std::string feed_item::pub_date_str()
     {
@@ -80,56 +53,6 @@ namespace rss
         this->items[item.key()] = item;
     }
 
-    nlohmann::json feed::to_json()
-    {
-        nlohmann::json json;
-        json["url"] = this->url;
-        json["tmp_path"] = this->tmp_path;
-        json["title"] = this->title;
-        json["link"] = this->link;
-        json["description"] = this->description;
-        json["language"] = this->language;
-        json["items"] = {};
-        for (auto &[key, value] : this->items)
-        {
-            json["items"].push_back(value.to_json());
-        }
-        json["open_with"] = {};
-        for (auto &line : this->open_with)
-        {
-            json["open_with"].push_back(line);
-        }
-        json["tags"] = {};
-        for (auto &tag : this->tags)
-        {
-            json["tags"].push_back(tag);
-        }
-        return json;
-    }
-
-    feed::feed(nlohmann::json json)
-    {
-        this->url = json["url"];
-        this->tmp_path = json["tmp_path"];
-        this->title = json["title"];
-        this->link = json["link"];
-        this->description = json["description"];
-        this->language = json["language"];
-        for (const auto &j_item : json["items"])
-        {
-            feed_item f_item(j_item);
-            this->items[f_item.key()] = f_item;
-        }
-        for (const auto &line : json["open_with"])
-        {
-            this->open_with.push_back(line);
-        }
-        for (const auto &tag : json["tags"])
-        {
-            this->tags.push_back(tag);
-        }
-    }
-
     void feed::update()
     {
         fmt::print("Update {} {}\n", this->url, this->tmp_path);
@@ -142,6 +65,8 @@ namespace rss
             {
                 this->items[key] = value;
             }
+            this->update_date = date::floor<std::chrono::seconds>(
+                    std::chrono::system_clock::now());
         }
         else
         {
@@ -203,6 +128,13 @@ namespace rss
         return false;
     }
 
+    std::string feed::update_date_str()
+    {
+        std::stringstream os_updatedate;
+        os_updatedate << date::format("%F %T", this->update_date);
+        return os_updatedate.str();
+    }
+
     flatbuffers::Offset<mfeed_fb::rss_data::Feed>
     feed::to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb)
     {
@@ -233,7 +165,8 @@ namespace rss
                 fbb.CreateString(this->language),
                 fbb.CreateVector(vec_items),
                 fbb.CreateVector(vec_open_with),
-                fbb.CreateVector(vec_tags));
+                fbb.CreateVector(vec_tags),
+                fbb.CreateString(this->update_date_str()));
     }
 
     feed::feed(const mfeed_fb::rss_data::Feed *fb_feed)
@@ -244,6 +177,11 @@ namespace rss
         this->link = fb_feed->link()->str();
         this->description = fb_feed->description()->str();
         this->language = fb_feed->language()->str();
+        if (fb_feed->update_date() != nullptr)
+        {
+            std::stringstream is_updatedate(fb_feed->update_date()->str());
+            is_updatedate >> date::parse("%F %T", this->update_date);
+        }
 
         auto fb_vec_items = fb_feed->items();
         for (uint32_t i = 0; i < fb_vec_items->size(); ++i)

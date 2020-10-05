@@ -137,7 +137,8 @@ struct Feed FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_LANGUAGE = 14,
     VT_ITEMS = 16,
     VT_OPEN_WITH = 18,
-    VT_TAGS = 20
+    VT_TAGS = 20,
+    VT_UPDATE_DATE = 22
   };
   const flatbuffers::String *url() const {
     return GetPointer<const flatbuffers::String *>(VT_URL);
@@ -166,6 +167,9 @@ struct Feed FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *tags() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_TAGS);
   }
+  const flatbuffers::String *update_date() const {
+    return GetPointer<const flatbuffers::String *>(VT_UPDATE_DATE);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_URL) &&
@@ -189,6 +193,8 @@ struct Feed FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyOffset(verifier, VT_TAGS) &&
            verifier.VerifyVector(tags()) &&
            verifier.VerifyVectorOfStrings(tags()) &&
+           VerifyOffset(verifier, VT_UPDATE_DATE) &&
+           verifier.VerifyString(update_date()) &&
            verifier.EndTable();
   }
 };
@@ -224,6 +230,9 @@ struct FeedBuilder {
   void add_tags(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> tags) {
     fbb_.AddOffset(Feed::VT_TAGS, tags);
   }
+  void add_update_date(flatbuffers::Offset<flatbuffers::String> update_date) {
+    fbb_.AddOffset(Feed::VT_UPDATE_DATE, update_date);
+  }
   explicit FeedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -246,8 +255,10 @@ inline flatbuffers::Offset<Feed> CreateFeed(
     flatbuffers::Offset<flatbuffers::String> language = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<mfeed_fb::rss_data::Item>>> items = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> open_with = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> tags = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> tags = 0,
+    flatbuffers::Offset<flatbuffers::String> update_date = 0) {
   FeedBuilder builder_(_fbb);
+  builder_.add_update_date(update_date);
   builder_.add_tags(tags);
   builder_.add_open_with(open_with);
   builder_.add_items(items);
@@ -270,7 +281,8 @@ inline flatbuffers::Offset<Feed> CreateFeedDirect(
     const char *language = nullptr,
     const std::vector<flatbuffers::Offset<mfeed_fb::rss_data::Item>> *items = nullptr,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *open_with = nullptr,
-    const std::vector<flatbuffers::Offset<flatbuffers::String>> *tags = nullptr) {
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *tags = nullptr,
+    const char *update_date = nullptr) {
   auto url__ = url ? _fbb.CreateString(url) : 0;
   auto tmp_path__ = tmp_path ? _fbb.CreateString(tmp_path) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
@@ -280,6 +292,7 @@ inline flatbuffers::Offset<Feed> CreateFeedDirect(
   auto items__ = items ? _fbb.CreateVector<flatbuffers::Offset<mfeed_fb::rss_data::Item>>(*items) : 0;
   auto open_with__ = open_with ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*open_with) : 0;
   auto tags__ = tags ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*tags) : 0;
+  auto update_date__ = update_date ? _fbb.CreateString(update_date) : 0;
   return mfeed_fb::rss_data::CreateFeed(
       _fbb,
       url__,
@@ -290,7 +303,8 @@ inline flatbuffers::Offset<Feed> CreateFeedDirect(
       language__,
       items__,
       open_with__,
-      tags__);
+      tags__,
+      update_date__);
 }
 
 struct RSSData FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

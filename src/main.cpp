@@ -92,6 +92,7 @@ int main(int /*argc*/, char ** /*argv*/)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.NavActive = true;
     ImFontConfig fontConfig;
     fontConfig.MergeMode = true;
     fontConfig.OversampleH = 1;
@@ -312,6 +313,9 @@ int main(int /*argc*/, char ** /*argv*/)
                 }
                 else
                 {
+                    ImGui::SameLine();
+                    ImGui::Text(fmt::format("Updated: {}",
+                                focus_feed->update_date_str()).c_str());
                     ImGui::Text(focus_feed->title.c_str());
                     ImGui::Text(focus_feed->link.c_str());
                     ImGui::Text(focus_feed->description.c_str());

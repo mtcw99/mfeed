@@ -19,9 +19,6 @@ namespace rss
         data();
         ~data() = default;
 
-        void load(std::string_view filepath);
-        void save(std::string_view filepath);
-
         void load_fb(std::string_view filepath);
         void save_fb(std::string_view filepath);
 

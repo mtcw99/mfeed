@@ -4,6 +4,7 @@ Mart's (Graphical) RSS Feed Reader written in C++20 + imgui
 ![2020-01-04 Screenshot of mfeed](screenshots/mfeed_2020-10-04.png)
 
 ## Requirements
+### To build
 * C++20 and C
   * C++20: Must have [starts_with](https://en.cppreference.com/w/cpp/string/basic_string/starts_with) in `std::string` 
 * [cmake](https://cmake.org/)
@@ -23,7 +24,9 @@ cmake just automaically will just fetch them so no actions needed
 * [fmt](https://github.com/fmtlib/fmt)
 * [pugixml](https://github.com/zeux/pugixml)
 * [date](https://github.com/HowardHinnant/date)
-* [json](https://github.com/nlohmann/json)
+
+### Assets
+* [noto](https://www.google.com/get/noto/) - Font (Latin and CJK)
 
 ### Future/Planned Requirements
 * C++20
@@ -34,8 +37,11 @@ cmake just automaically will just fetch them so no actions needed
 ## Build
 * `mkdir build`
 * `cd build`
-* `cmake ..`
+* `cmake -DCMAKE_BUILD_TYPE=Release ..`
 * `make`
+
+## Install
+* `make install` or `sudo make install` (if `sudo` required)
 
 ## License
 mfeed is licensed under the [GPLv3 (GNU General Public License v3.0)](LICENSE) ([gnu.org link](https://www.gnu.org/licenses/gpl-3.0.html)).

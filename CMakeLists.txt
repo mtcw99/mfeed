@@ -15,7 +15,7 @@ project(mfeed VERSION 1.0
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_BUILD_TYPE debug)
+#set(CMAKE_BUILD_TYPE debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fno-exceptions -DPUGIXML_NO_EXCEPTIONS")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 
@@ -50,18 +50,6 @@ FetchContent_Declare(
     GIT_TAG v3.0.0
 )
 FetchContent_MakeAvailable(date)
-
-FetchContent_Declare(
-    json
-    GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
-    GIT_TAG v3.9.1
-)
-FetchContent_GetProperties(json)
-if(NOT json_POPULATED)
-    FetchContent_Populate(json)
-    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-FetchContent_MakeAvailable(json)
 
 ########
 # IMGUI
@@ -117,13 +105,18 @@ target_link_libraries(mfeed
         stdc++fs
         pugixml
         date
-        nlohmann_json::nlohmann_json
         imgui
         glfw
         OpenGL::GL
         glad
         ${FREETYPE_LIBRARIES}
         ${CMAKE_DL_LIBS}
-	Threads::Threads
+        Threads::Threads
 )
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  install(FILES misc/mfeed.desktop DESTINATION share/applications)
+  install(FILES misc/mfeed.svg DESTINATION share/icons/hicolor/scalable/apps)
+  install(TARGETS mfeed DESTINATION bin)
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 

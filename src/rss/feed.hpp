@@ -7,7 +7,6 @@
 #include <functional>
 #include <chrono>
 #include "date/date.h"       // Remove when gcc fully implements C++20 date feature
-#include <nlohmann/json.hpp>
 #include "flatbuffers/rss_data_generated.h"
 
 // C++20:
@@ -24,10 +23,8 @@ namespace rss
         date::sys_time<std::chrono::seconds> pub_date;
 
         feed_item() = default;
-        feed_item(nlohmann::json json);
         feed_item(const mfeed_fb::rss_data::Item *fb_item);
 
-        nlohmann::json to_json();
         std::string pub_date_str();
         std::string key();
         flatbuffers::Offset<mfeed_fb::rss_data::Item> to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb);
@@ -43,6 +40,10 @@ namespace rss
         std::string description;
         std::string language;
 
+        date::sys_time<std::chrono::seconds> update_date =
+                date::floor<std::chrono::seconds>(
+                        std::chrono::system_clock::now());
+
         std::map<std::string, feed_item, std::greater<std::string>> items;
         std::vector<std::string> open_with;
         std::vector<std::string> tags;
@@ -50,17 +51,16 @@ namespace rss
         bool erase = false;
 
         feed() = default;
-        feed(nlohmann::json json);
         feed(const mfeed_fb::rss_data::Feed *fb_feed);
         ~feed() = default;
 
         void new_item(feed_item &item);
-        nlohmann::json to_json();
         void update();
         std::string tags_str();
         std::string tags_nl_str();
         bool tags_check(std::string_view search_buffer);
         flatbuffers::Offset<mfeed_fb::rss_data::Feed> to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb);
+        std::string update_date_str();
     };
 }
 

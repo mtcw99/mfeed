@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=mfeed
+GenericName=RSS Reader
+Exec=mfeed
+Icon=mfeed
+Terminal=false
+Categories=Network;RSS;
