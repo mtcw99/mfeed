@@ -147,6 +147,7 @@ int main(int /*argc*/, char ** /*argv*/)
     bool windows_settings = false;
     bool windows_feed_settings = false;
     bool windows_feed_settings_new = false;
+    bool windows_remove_focus_feed = false;
     int display_w, display_h;
     char browser[256];
     double time_previous = glfwGetTime();
@@ -234,10 +235,19 @@ int main(int /*argc*/, char ** /*argv*/)
             ImGui::Text(fmt::format("Current: {}",
                         (focus_feed != nullptr) ? focus_feed->title : "None"
                         ).c_str());
+
+#ifndef NDEBUG
             ImGui::Spacing();
             ImGui::Text(fmt::format("FPS: {}", fps).c_str());
             ImGui::Spacing();
             ImGui::Text(fmt::format("ms/f: {:.2f}", msf).c_str());
+            ImGui::Spacing();
+            ImGui::Text("NOTICE: Using debug build");
+#else
+            (void) fps;
+            (void) msf;
+#endif
+
             ImGui::EndMainMenuBar();
         }
 
@@ -308,8 +318,7 @@ int main(int /*argc*/, char ** /*argv*/)
                 // TODO: Have a popup dialog first
                 if (ImGui::Button("Remove"))
                 {
-                    focus_feed->erase = true;
-                    focus_feed = nullptr;
+                    windows_remove_focus_feed = true;
                 }
                 else
                 {
@@ -502,6 +511,27 @@ int main(int /*argc*/, char ** /*argv*/)
 
                 ImGui::End();
             }
+        }
+
+        if (windows_remove_focus_feed)
+        {
+            ImGui::Begin("Removing feed");
+
+            ImGui::Text(fmt::format("Remove \"{}\"?", focus_feed->title).c_str());
+
+            if (ImGui::Button("Yes (Remove feed)"))
+            {
+                focus_feed->erase = true;
+                focus_feed = nullptr;
+                windows_remove_focus_feed = false;
+            }
+
+            if (ImGui::Button("No (Do not remove feed)"))
+            {
+                windows_remove_focus_feed = false;
+            }
+
+            ImGui::End();
         }
 
         ImGui::Render();

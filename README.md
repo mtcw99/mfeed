@@ -1,7 +1,7 @@
 # mfeed
 Mart's (Graphical) RSS Feed Reader written in C++20 + imgui
 
-![2020-01-04 Screenshot of mfeed](screenshots/mfeed_2020-10-04.png)
+![2020-10-04 Screenshot of mfeed](screenshots/mfeed_2020-10-04.png)
 
 ## Requirements
 ### To build
@@ -20,7 +20,7 @@ These are already embedded in the project
 * [flatbuffers](https://github.com/google/flatbuffers)
 
 #### cmake FetchContent
-cmake just automaically will just fetch them so no actions needed
+cmake automatically will just fetch them, so no actions needed
 * [fmt](https://github.com/fmtlib/fmt)
 * [pugixml](https://github.com/zeux/pugixml)
 * [date](https://github.com/HowardHinnant/date)
