@@ -76,13 +76,13 @@ add_subdirectory(vendor)
 ######
 add_executable(mfeed
     src/main.cpp
-    src/test.cpp
     src/imgui/imgui_impl_opengl3.cpp
     src/rss/downloader.cpp
     src/rss/extract.cpp
     src/rss/feed.cpp
     src/rss/data.cpp
     src/rss/link.cpp
+    src/gui/main_ui.cpp
 )
 
 target_compile_features(mfeed PRIVATE cxx_std_20)
