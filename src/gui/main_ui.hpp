@@ -40,7 +40,6 @@ namespace gui
         char browser[256];
         uint32_t fps = 0;
         double msf = 0.0;
-        uint32_t scale_size;
         rss::feed *focus_feed = nullptr;
         rss::feed_item *focus_item = nullptr;
 

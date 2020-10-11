@@ -3,6 +3,7 @@ get_filename_component(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 list(APPEND IMGUI_PUBLIC_HEADERS
     imgui/imgui.h
     imgui/imgui_impl_glfw.h
+    imgui/imgui_impl_opengl3.h
 )
 
 list(APPEND IMGUI_PRIVATE_HEADERS
@@ -19,6 +20,7 @@ list(APPEND IMGUI_SOURCES
     imgui/imgui.cpp
     imgui/imgui_draw.cpp
     imgui/imgui_impl_glfw.cpp
+    imgui/imgui_impl_opengl3.cpp
 )
 
 list(APPEND IMGUI_PUBLIC_INCLUDE_DIRS
@@ -29,11 +31,17 @@ list(APPEND IMGUI_PUBLIC_LIBRARIES)
 
 add_library(glad glad/glad.h glad/glad.c)
 target_include_directories(glad
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 add_library(imgui STATIC ${IMGUI_SOURCES})
-target_link_libraries(imgui PUBLIC ${IMGUI_PUBLIC_LIBRARIES})
+target_link_libraries(imgui
+    PUBLIC
+        ${IMGUI_PUBLIC_LIBRARIES}
+    PRIVATE
+        glad
+)
 target_include_directories(imgui
     PUBLIC ${IMGUI_PUBLIC_INCLUDE_DIRS}
     PRIVATE ${IMGUI_PRIVATE_INCLUDE_DIRS}

@@ -203,7 +203,6 @@ namespace gui
 
             ImGui::SameLine();
 
-            // TODO: Have a popup dialog first
             if (ImGui::Button("Remove"))
             {
                 this->set_visibility(main_ui_windows::popup_remove_feed, true);

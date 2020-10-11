@@ -76,7 +76,6 @@ add_subdirectory(vendor)
 ######
 add_executable(mfeed
     src/main.cpp
-    src/imgui/imgui_impl_opengl3.cpp
     src/rss/downloader.cpp
     src/rss/extract.cpp
     src/rss/feed.cpp
