@@ -328,6 +328,7 @@ namespace gui
     {
         static char openas_buffer[1024];
         static char tags_buffer[1024];
+        static char title[512];
         ImGui::Begin("Feed Settings");
 
         if (this->get_new_init(main_ui_windows::feed_settings))
@@ -343,6 +344,9 @@ namespace gui
             // Tags
             strcpy(tags_buffer, focus_feed->tags_nl_str().c_str());
 
+            // title
+            strcpy(title, focus_feed->title.c_str());
+
             this->set_new_init(main_ui_windows::feed_settings, false);
         }
 
@@ -351,6 +355,7 @@ namespace gui
             this->set_visibility(main_ui_windows::feed_settings, false);
             openas_buffer[0] = '\0';
             tags_buffer[0] = '\0';
+            title[0] = '\0';
         }
 
         ImGui::SameLine();
@@ -378,10 +383,15 @@ namespace gui
                 }
             }
 
+            // Title
+            focus_feed->title = title;
+
             this->set_visibility(main_ui_windows::feed_settings, false);
             openas_buffer[0] = '\0';
             tags_buffer[0] = '\0';
         }
+
+        ImGui::InputText("Title", title, 512);
 
         ImGui::InputTextMultiline("Open as...", openas_buffer,
                 1024);
