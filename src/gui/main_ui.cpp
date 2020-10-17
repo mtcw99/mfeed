@@ -29,6 +29,7 @@ namespace gui
         this->windows[static_cast<uint32_t>(main_ui_windows::main_settings)].func = std::bind(&gui::main_ui::main_settings, this);
         this->windows[static_cast<uint32_t>(main_ui_windows::feed_settings)].func = std::bind(&gui::main_ui::feed_settings, this);
         this->windows[static_cast<uint32_t>(main_ui_windows::popup_remove_feed)].func = std::bind(&gui::main_ui::popup_remove_feed, this);
+        this->windows[static_cast<uint32_t>(main_ui_windows::popup_clear_feed)].func = std::bind(&gui::main_ui::popup_clear_feed, this);
 
         this->mainbar_size = static_cast<uint32_t>(20 * scale_size);
     }
@@ -213,7 +214,10 @@ namespace gui
                 ImGui::Text(fmt::format("Updated: {}",
                             focus_feed->update_date_str()).c_str());
                 ImGui::Text(focus_feed->title.c_str());
-                ImGui::Text(focus_feed->link.c_str());
+                if (ImGui::Button(focus_feed->link.c_str()))
+                {
+                    rss::link::open(focus_feed->link, data.browser);
+                }
                 ImGui::Text(focus_feed->description.c_str());
                 ImGui::Text(focus_feed->language.c_str());
 
@@ -389,15 +393,22 @@ namespace gui
             this->set_visibility(main_ui_windows::feed_settings, false);
             openas_buffer[0] = '\0';
             tags_buffer[0] = '\0';
+            title[0] = '\0';
         }
 
         ImGui::InputText("Title", title, 512);
+        ImGui::InputTextMultiline("Open as...", openas_buffer, 1024);
+        ImGui::InputTextMultiline("Tags", tags_buffer, 1024);
 
-        ImGui::InputTextMultiline("Open as...", openas_buffer,
-                1024);
+        if (ImGui::Button("Clear Feed"))
+        {
+            this->set_visibility(main_ui_windows::popup_clear_feed, true);
+        }
 
-        ImGui::InputTextMultiline("Tags", tags_buffer,
-                1024);
+        if (ImGui::Button("Go to feed content"))
+        {
+            rss::link::open(focus_feed->url, data.browser);
+        }
 
         ImGui::End();
     }
@@ -418,6 +429,26 @@ namespace gui
         if (ImGui::Button("No (Do not remove feed)"))
         {
             this->set_visibility(main_ui_windows::popup_remove_feed, false);
+        }
+
+        ImGui::End();
+    }
+
+    void main_ui::popup_clear_feed()
+    {
+        ImGui::Begin("Clear Feed");
+
+        ImGui::Text(fmt::format("Clear \"{}\"?", focus_feed->title).c_str());
+
+        if (ImGui::Button("Yes (Clear feed)"))
+        {
+            focus_feed->items.clear();
+            this->set_visibility(main_ui_windows::popup_clear_feed, false);
+        }
+
+        if (ImGui::Button("No (Do not clear feed)"))
+        {
+            this->set_visibility(main_ui_windows::popup_clear_feed, false);
         }
 
         ImGui::End();

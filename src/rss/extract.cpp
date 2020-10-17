@@ -53,6 +53,12 @@ namespace rss::extract
                 // RFC 822 Timestamp
                 std::istringstream pub_date_str(item.child("pubDate").child_value());
                 pub_date_str >> date::parse("%a, %d %b %Y %T %z", feeditem.pub_date);
+                const auto ymd = date::year_month_day{date::floor<date::days>(feeditem.pub_date)};
+                if (ymd.year() == date::year{1970})
+                {
+                    pub_date_str = std::istringstream(item.child("pubDate").child_value());
+                    pub_date_str >> date::parse("%a, %d %b %Y %T", feeditem.pub_date);
+                }
 
                 feed.new_item(feeditem);
             }
@@ -76,8 +82,28 @@ namespace rss::extract
                 feeditem.description = "";
 
                 // RFC 3339 Timestamp
-                std::istringstream pub_date_str(item.child("published").child_value());
-                pub_date_str >> date::parse("%FT%T%Ez", feeditem.pub_date);
+                if (std::string(item.child("published").name()) == "published")
+                {
+                    std::istringstream pub_date_str(item.child("published").child_value());
+                    pub_date_str >> date::parse("%FT%T%Ez", feeditem.pub_date);
+                    const auto ymd = date::year_month_day{date::floor<date::days>(feeditem.pub_date)};
+                    if (ymd.year() == date::year{1970})
+                    {
+                        pub_date_str = std::istringstream(item.child("published").child_value());
+                        pub_date_str >> date::parse("%FT%TZ", feeditem.pub_date);
+                    }
+                }
+                else if (std::string(item.child("updated").name()) == "updated")
+                {
+                    std::istringstream pub_date_str(item.child("updated").child_value());
+                    pub_date_str >> date::parse("%FT%T%Ez", feeditem.pub_date);
+                    const auto ymd = date::year_month_day{date::floor<date::days>(feeditem.pub_date)};
+                    if (ymd.year() == date::year{1970})
+                    {
+                        pub_date_str = std::istringstream(item.child("updated").child_value());
+                        pub_date_str >> date::parse("%FT%TZ", feeditem.pub_date);
+                    }
+                }
 
                 feed.new_item(feeditem);
             }

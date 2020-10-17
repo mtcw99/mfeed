@@ -19,6 +19,7 @@ namespace gui
         main_settings,
         feed_settings,
         popup_remove_feed,
+        popup_clear_feed,
 
         total
     };
@@ -75,6 +76,7 @@ namespace gui
         void feed_settings();
 
         void popup_remove_feed();
+        void popup_clear_feed();
     };
 }
 
