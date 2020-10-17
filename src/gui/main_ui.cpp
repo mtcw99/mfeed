@@ -211,15 +211,22 @@ namespace gui
             else
             {
                 ImGui::SameLine();
-                ImGui::Text(fmt::format("Updated: {}",
-                            focus_feed->update_date_str()).c_str());
+                ImGui::Text(fmt::format("Updated: {} | Type: {}",
+                            focus_feed->update_date_str(),
+                            focus_feed->type_str()).c_str());
                 ImGui::Text(focus_feed->title.c_str());
                 if (ImGui::Button(focus_feed->link.c_str()))
                 {
                     rss::link::open(focus_feed->link, data.browser);
                 }
-                ImGui::Text(focus_feed->description.c_str());
-                ImGui::Text(focus_feed->language.c_str());
+                if (focus_feed->description != "")
+                {
+                    ImGui::TextWrapped(focus_feed->description.c_str());
+                }
+                if (focus_feed->type == rss::e_feed_type::rss)
+                {
+                    ImGui::Text(focus_feed->language.c_str());
+                }
 
                 ImGui::Separator();
 

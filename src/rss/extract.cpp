@@ -40,6 +40,7 @@ namespace rss::extract
             feed.link = channel.child("link").child_value();
             feed.description = channel.child("description").child_value();
             feed.language = channel.child("language").child_value();
+            feed.type = rss::e_feed_type::rss;
 
             for (pugi::xml_node item : channel.children("item"))
             {
@@ -65,12 +66,32 @@ namespace rss::extract
         }
         else if (is_atom)
         {   // Atom
+#if 0
             pugi::xml_node author = doc.child("feed").child("author");
 
             feed.title = author.child("name").child_value();
             feed.link = author.child("uri").child_value();
             feed.description = author.child("content").child_value();
             feed.language = "";
+#endif
+            pugi::xml_node feednode = doc.child("feed");
+
+            feed.title = feednode.child("title").child_value();
+            for (pugi::xml_node link : feednode.children("link"))
+            {
+                const std::string &rel = link.attribute("rel").value();
+                if (rel == "alternate")
+                {
+                    feed.link = link.attribute("href").value();
+                }
+            }
+            feed.description = feednode.child("content").child_value();
+            if (feed.description == "")
+            {
+                feed.description = feednode.child("subtitle").child_value();
+            }
+            feed.language = "";
+            feed.type = rss::e_feed_type::atom;
 
             for (pugi::xml_node item : doc.child("feed").children("entry"))
             {
@@ -79,7 +100,11 @@ namespace rss::extract
                 feeditem.title = item.child("title").child_value();
                 feeditem.link = item.child("link").attribute("href").value();
                 feeditem.guid = item.child("id").child_value();
-                feeditem.description = "";
+                feeditem.description = item.child("summary").child_value();
+                if (feeditem.description == "")
+                {
+                    feeditem.description = item.child("content").child_value();
+                }
 
                 // RFC 3339 Timestamp
                 if (std::string(item.child("published").name()) == "published")

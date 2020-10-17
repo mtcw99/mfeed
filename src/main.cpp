@@ -119,8 +119,15 @@ int main(int /*argc*/, char ** /*argv*/)
 
     for (const auto &feed : data.feeds_list)
     {
-        if (feed.language.starts_with("zh"))
+        if ((feed.type == rss::e_feed_type::atom) || (
+                    feed.type == rss::e_feed_type::rss && (
+                        feed.language.starts_with("zh")
+                        )))
         {
+#if 0
+            fmt::print("({}) desc: {} | {}\n", feed.type_str(), feed.description,
+                    feed.type);
+#endif
             imRangesBuilder.AddText(feed.title.c_str());
             imRangesBuilder.AddText(feed.description.c_str());
             for (const auto &[_, item] : feed.items)

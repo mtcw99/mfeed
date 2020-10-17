@@ -14,6 +14,12 @@
 
 namespace rss
 {
+    enum struct e_feed_type : int8_t
+    {
+        rss = 0,
+        atom = 1
+    };
+
     struct feed_item
     {
         std::string title;
@@ -40,6 +46,8 @@ namespace rss
         std::string description;
         std::string language;
 
+        e_feed_type type;
+
         date::sys_time<std::chrono::seconds> update_date =
                 date::floor<std::chrono::seconds>(
                         std::chrono::system_clock::now());
@@ -61,6 +69,9 @@ namespace rss
         bool tags_check(std::string_view search_buffer);
         flatbuffers::Offset<mfeed_fb::rss_data::Feed> to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb);
         std::string update_date_str();
+        std::string type_str() const;
+        mfeed_fb::rss_data::FeedType type_to_flatbuffer() const;
+        void type_from_flatbuffer(mfeed_fb::rss_data::FeedType fb_type);
     };
 }
 

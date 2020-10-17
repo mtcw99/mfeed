@@ -18,6 +18,36 @@ struct FeedBuilder;
 struct RSSData;
 struct RSSDataBuilder;
 
+enum FeedType {
+  FeedType_rss = 0,
+  FeedType_atom = 1,
+  FeedType_MIN = FeedType_rss,
+  FeedType_MAX = FeedType_atom
+};
+
+inline const FeedType (&EnumValuesFeedType())[2] {
+  static const FeedType values[] = {
+    FeedType_rss,
+    FeedType_atom
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesFeedType() {
+  static const char * const names[3] = {
+    "rss",
+    "atom",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameFeedType(FeedType e) {
+  if (flatbuffers::IsOutRange(e, FeedType_rss, FeedType_atom)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesFeedType()[index];
+}
+
 struct Item FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ItemBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -138,7 +168,8 @@ struct Feed FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ITEMS = 16,
     VT_OPEN_WITH = 18,
     VT_TAGS = 20,
-    VT_UPDATE_DATE = 22
+    VT_UPDATE_DATE = 22,
+    VT_TYPE = 24
   };
   const flatbuffers::String *url() const {
     return GetPointer<const flatbuffers::String *>(VT_URL);
@@ -170,6 +201,9 @@ struct Feed FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *update_date() const {
     return GetPointer<const flatbuffers::String *>(VT_UPDATE_DATE);
   }
+  mfeed_fb::rss_data::FeedType type() const {
+    return static_cast<mfeed_fb::rss_data::FeedType>(GetField<int8_t>(VT_TYPE, 0));
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_URL) &&
@@ -195,6 +229,7 @@ struct Feed FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyVectorOfStrings(tags()) &&
            VerifyOffset(verifier, VT_UPDATE_DATE) &&
            verifier.VerifyString(update_date()) &&
+           VerifyField<int8_t>(verifier, VT_TYPE) &&
            verifier.EndTable();
   }
 };
@@ -233,6 +268,9 @@ struct FeedBuilder {
   void add_update_date(flatbuffers::Offset<flatbuffers::String> update_date) {
     fbb_.AddOffset(Feed::VT_UPDATE_DATE, update_date);
   }
+  void add_type(mfeed_fb::rss_data::FeedType type) {
+    fbb_.AddElement<int8_t>(Feed::VT_TYPE, static_cast<int8_t>(type), 0);
+  }
   explicit FeedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -256,7 +294,8 @@ inline flatbuffers::Offset<Feed> CreateFeed(
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<mfeed_fb::rss_data::Item>>> items = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> open_with = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> tags = 0,
-    flatbuffers::Offset<flatbuffers::String> update_date = 0) {
+    flatbuffers::Offset<flatbuffers::String> update_date = 0,
+    mfeed_fb::rss_data::FeedType type = mfeed_fb::rss_data::FeedType_rss) {
   FeedBuilder builder_(_fbb);
   builder_.add_update_date(update_date);
   builder_.add_tags(tags);
@@ -268,6 +307,7 @@ inline flatbuffers::Offset<Feed> CreateFeed(
   builder_.add_title(title);
   builder_.add_tmp_path(tmp_path);
   builder_.add_url(url);
+  builder_.add_type(type);
   return builder_.Finish();
 }
 
@@ -282,7 +322,8 @@ inline flatbuffers::Offset<Feed> CreateFeedDirect(
     const std::vector<flatbuffers::Offset<mfeed_fb::rss_data::Item>> *items = nullptr,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *open_with = nullptr,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *tags = nullptr,
-    const char *update_date = nullptr) {
+    const char *update_date = nullptr,
+    mfeed_fb::rss_data::FeedType type = mfeed_fb::rss_data::FeedType_rss) {
   auto url__ = url ? _fbb.CreateString(url) : 0;
   auto tmp_path__ = tmp_path ? _fbb.CreateString(tmp_path) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
@@ -304,7 +345,8 @@ inline flatbuffers::Offset<Feed> CreateFeedDirect(
       items__,
       open_with__,
       tags__,
-      update_date__);
+      update_date__,
+      type);
 }
 
 struct RSSData FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

@@ -67,6 +67,11 @@ namespace rss
             }
             this->update_date = date::floor<std::chrono::seconds>(
                     std::chrono::system_clock::now());
+
+            this->link = feed.link;
+            this->description = feed.description;
+            this->language = feed.language;
+            this->type = feed.type;
         }
         else
         {
@@ -166,7 +171,8 @@ namespace rss
                 fbb.CreateVector(vec_items),
                 fbb.CreateVector(vec_open_with),
                 fbb.CreateVector(vec_tags),
-                fbb.CreateString(this->update_date_str()));
+                fbb.CreateString(this->update_date_str()),
+                this->type_to_flatbuffer());
     }
 
     feed::feed(const mfeed_fb::rss_data::Feed *fb_feed)
@@ -177,6 +183,7 @@ namespace rss
         this->link = fb_feed->link()->str();
         this->description = fb_feed->description()->str();
         this->language = fb_feed->language()->str();
+        this->type_from_flatbuffer(fb_feed->type());
         if (fb_feed->update_date() != nullptr)
         {
             std::stringstream is_updatedate(fb_feed->update_date()->str());
@@ -200,6 +207,36 @@ namespace rss
         for (uint32_t i = 0; i < fb_vec_tags->size(); ++i)
         {
             this->tags.push_back(fb_vec_tags->Get(i)->str());
+        }
+    }
+
+    std::string feed::type_str() const
+    {
+        return (this->type == rss::e_feed_type::rss) ? "rss" : "atom";
+    }
+
+    mfeed_fb::rss_data::FeedType feed::type_to_flatbuffer() const
+    {
+        switch (this->type)
+        {
+        case rss::e_feed_type::rss:
+            return mfeed_fb::rss_data::FeedType_rss;
+        case rss::e_feed_type::atom:
+        default:
+            return mfeed_fb::rss_data::FeedType_atom;
+        }
+    }
+
+    void feed::type_from_flatbuffer(mfeed_fb::rss_data::FeedType fb_type)
+    {
+        switch (fb_type)
+        {
+        case mfeed_fb::rss_data::FeedType_rss:
+            this->type = rss::e_feed_type::rss;
+            break;
+        case mfeed_fb::rss_data::FeedType_atom:
+            this->type = rss::e_feed_type::atom;
+            break;
         }
     }
 }

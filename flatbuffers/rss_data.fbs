@@ -1,5 +1,10 @@
 namespace mfeed_fb.rss_data;
 
+enum FeedType : byte {
+  rss = 0,
+  atom = 1
+}
+
 table Item {
   title: string;
   link: string;
@@ -19,6 +24,7 @@ table Feed {
   open_with: [string];
   tags: [string];
   update_date: string;
+  type: FeedType;
 }
 
 table RSSData {
