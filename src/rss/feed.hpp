@@ -25,7 +25,7 @@ namespace rss
         std::string title;
         std::string link;
         std::string guid;
-        std::string description;
+        std::vector<std::string> content;
         date::sys_time<std::chrono::seconds> pub_date;
 
         feed_item() = default;

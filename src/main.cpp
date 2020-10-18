@@ -133,7 +133,10 @@ int main(int /*argc*/, char ** /*argv*/)
             for (const auto &[_, item] : feed.items)
             {
                 imRangesBuilder.AddText(item.title.c_str());
-                imRangesBuilder.AddText(item.description.c_str());
+                for (const auto &line : item.content)
+                {
+                    imRangesBuilder.AddText(line.c_str());
+                }
             }
         }
     }

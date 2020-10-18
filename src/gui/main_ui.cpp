@@ -1,6 +1,7 @@
 #include "main_ui.hpp"
 
 #include "../rss/link.hpp"
+#include "../rss/extract.hpp"
 
 #include <cstring>
 #include <thread>
@@ -236,7 +237,7 @@ namespace gui
                     if (ImGui::Button(("Read##" + extraID).c_str()))
                     {
                         focus_item = &item;
-                        this->set_visibility(main_ui_windows::feed_item, true);
+                        this->set_visibility(main_ui_windows::feed_item, true, true);
                     }
                     ImGui::SameLine();
                     if (ImGui::Button(("Open##" + extraID).c_str()))
@@ -280,7 +281,16 @@ namespace gui
 
     void main_ui::feed_item()
     {
+        static std::vector<rss::extract::content> html_content;
+
         ImGui::Begin("Item");
+
+        if (this->get_new_init(main_ui_windows::feed_item))
+        {
+            html_content.clear();
+            html_content = rss::extract::parse_content(focus_item->content);
+            this->set_new_init(main_ui_windows::feed_item, false);
+        }
 
         if (ImGui::Button("Close"))
         {
@@ -309,7 +319,37 @@ namespace gui
 
         ImGui::Separator();
 
-        ImGui::TextWrapped(focus_item->description.c_str());
+        for (const auto &line : html_content)
+        {
+            switch (line.type)
+            {
+            case rss::extract::e_content_type::hyperlink:
+            {
+                const auto &hyperlink = std::get<rss::extract::s_hyperlink>(line.content);
+#if 0
+                fmt::print("REGIONW: {}\tCURSOR: {}\n",
+                        ImGui::GetWindowContentRegionWidth(),
+                        ImGui::GetCursorScreenPos().x);
+                if (ImGui::GetWindowContentRegionWidth() - ImGui::GetCursorPosX() < 0)
+                {
+                    ImGui::SameLine();
+                }
+#endif
+                if (ImGui::Button(hyperlink.text.c_str()))
+                {
+                    rss::link::open(hyperlink.link, data.browser);
+                }
+            }   break;
+            default:
+                ImGui::TextWrapped(std::get<std::string>(line.content).c_str());
+            }
+        }
+#if 0
+        for (const auto &line : focus_item->content)
+        {
+            ImGui::TextWrapped(line.c_str());
+        }
+#endif
 
         ImGui::End();
     }

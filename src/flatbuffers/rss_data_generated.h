@@ -54,7 +54,7 @@ struct Item FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_TITLE = 4,
     VT_LINK = 6,
     VT_GUID = 8,
-    VT_DESCRIPTION = 10,
+    VT_CONTENT = 10,
     VT_PUB_DATE = 12
   };
   const flatbuffers::String *title() const {
@@ -66,8 +66,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *guid() const {
     return GetPointer<const flatbuffers::String *>(VT_GUID);
   }
-  const flatbuffers::String *description() const {
-    return GetPointer<const flatbuffers::String *>(VT_DESCRIPTION);
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *content() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_CONTENT);
   }
   const flatbuffers::String *pub_date() const {
     return GetPointer<const flatbuffers::String *>(VT_PUB_DATE);
@@ -80,8 +80,9 @@ struct Item FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyString(link()) &&
            VerifyOffset(verifier, VT_GUID) &&
            verifier.VerifyString(guid()) &&
-           VerifyOffset(verifier, VT_DESCRIPTION) &&
-           verifier.VerifyString(description()) &&
+           VerifyOffset(verifier, VT_CONTENT) &&
+           verifier.VerifyVector(content()) &&
+           verifier.VerifyVectorOfStrings(content()) &&
            VerifyOffset(verifier, VT_PUB_DATE) &&
            verifier.VerifyString(pub_date()) &&
            verifier.EndTable();
@@ -101,8 +102,8 @@ struct ItemBuilder {
   void add_guid(flatbuffers::Offset<flatbuffers::String> guid) {
     fbb_.AddOffset(Item::VT_GUID, guid);
   }
-  void add_description(flatbuffers::Offset<flatbuffers::String> description) {
-    fbb_.AddOffset(Item::VT_DESCRIPTION, description);
+  void add_content(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> content) {
+    fbb_.AddOffset(Item::VT_CONTENT, content);
   }
   void add_pub_date(flatbuffers::Offset<flatbuffers::String> pub_date) {
     fbb_.AddOffset(Item::VT_PUB_DATE, pub_date);
@@ -124,11 +125,11 @@ inline flatbuffers::Offset<Item> CreateItem(
     flatbuffers::Offset<flatbuffers::String> title = 0,
     flatbuffers::Offset<flatbuffers::String> link = 0,
     flatbuffers::Offset<flatbuffers::String> guid = 0,
-    flatbuffers::Offset<flatbuffers::String> description = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> content = 0,
     flatbuffers::Offset<flatbuffers::String> pub_date = 0) {
   ItemBuilder builder_(_fbb);
   builder_.add_pub_date(pub_date);
-  builder_.add_description(description);
+  builder_.add_content(content);
   builder_.add_guid(guid);
   builder_.add_link(link);
   builder_.add_title(title);
@@ -140,19 +141,19 @@ inline flatbuffers::Offset<Item> CreateItemDirect(
     const char *title = nullptr,
     const char *link = nullptr,
     const char *guid = nullptr,
-    const char *description = nullptr,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *content = nullptr,
     const char *pub_date = nullptr) {
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto link__ = link ? _fbb.CreateString(link) : 0;
   auto guid__ = guid ? _fbb.CreateString(guid) : 0;
-  auto description__ = description ? _fbb.CreateString(description) : 0;
+  auto content__ = content ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*content) : 0;
   auto pub_date__ = pub_date ? _fbb.CreateString(pub_date) : 0;
   return mfeed_fb::rss_data::CreateItem(
       _fbb,
       title__,
       link__,
       guid__,
-      description__,
+      content__,
       pub_date__);
 }
 

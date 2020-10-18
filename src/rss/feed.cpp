@@ -27,11 +27,17 @@ namespace rss
     flatbuffers::Offset<mfeed_fb::rss_data::Item>
     feed_item::to_flatbuffer(flatbuffers::FlatBufferBuilder &fbb)
     {
+        std::vector<flatbuffers::Offset<flatbuffers::String>> fb_content;
+        for (const auto &line : this->content)
+        {
+            fb_content.push_back(fbb.CreateString(line));
+        }
+
         return mfeed_fb::rss_data::CreateItem(fbb,
                 fbb.CreateString(this->title),
                 fbb.CreateString(this->link),
                 fbb.CreateString(this->guid),
-                fbb.CreateString(this->description),
+                fbb.CreateVector(fb_content),
                 fbb.CreateString(this->pub_date_str()));
     }
 
@@ -40,7 +46,11 @@ namespace rss
         this->title = fb_item->title()->str();
         this->link = fb_item->link()->str();
         this->guid = fb_item->guid()->str();
-        this->description = fb_item->description()->str();
+        auto fb_content = fb_item->content();
+        for (uint32_t i = 0; i < fb_content->size(); ++i)
+        {
+            this->content.push_back(fb_content->Get(i)->str());
+        }
 
         std::stringstream is_pubdate(fb_item->pub_date()->str());
         is_pubdate >> date::parse("%F %T", this->pub_date);

@@ -11,7 +11,8 @@
 
 namespace gui
 {
-    enum struct main_ui_windows : uint32_t {
+    enum struct main_ui_windows : uint32_t
+    {
         side_feeds = 0,
         main_feed,
         new_feed,
@@ -24,7 +25,8 @@ namespace gui
         total
     };
 
-    struct main_ui_window_info {
+    struct main_ui_window_info
+    {
         bool visible = false;
         bool new_init = false;
         std::function<void()> func;
