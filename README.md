@@ -1,7 +1,7 @@
 # mfeed
 Mart's (Graphical) RSS Feed Reader written in C++20 + imgui
 
-![2020-10-04 Screenshot of mfeed](screenshots/mfeed_2020-10-04.png)
+![2020-10-18 Screenshot of mfeed](screenshots/mfeed_2020-10-18.png)
 
 ## Requirements
 ### To build
